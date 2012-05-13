@@ -6,7 +6,6 @@ Thanks ALZA and Shestak for making this mod possible. Thanks Tukz for his wonder
 
 ]]--
 
-
 --some init
 local addon, ns=...
 ct=ns.config
@@ -191,6 +190,15 @@ elseif ct.myclass=="ROGUE"then
 	end
 
 end
+--GENERIC ALWAYS ADD
+if(ct.mergeaoespam)then
+	-- Healer spells
+	ct.aoespam[109847]=true -- Maw of the Dragonlord LFR
+	ct.aoespam[107835]=true -- Maw of the Dragonlord NORMAL
+	ct.aoespam[109849]=true -- Maw of the Dragonlord HEROIC 
+	-- Damager spells
+end
+	
 ---------------------------------------------------------------------------------
 -- character config, overrides general and class
 if ct.myname == "Affli" then
@@ -202,9 +210,9 @@ end
 
 local numf
 if(ct.damage or ct.healing)then
-	 numf=4
+	 numf=5
 else
-	 numf=3
+	 numf=4
 end
 -- detect vechile
 local function SetUnit()
@@ -237,6 +245,100 @@ local function SetScroll()
 		end)
 	end
 end
+
+local function SaveLayout(frame)
+	if type(frame) ~= "string" then return end
+	if not _G[frame] then return end
+	if not xCT_DB then xCT_DB = {} end
+	
+	local opt = xCT_DB[frame] or nil
+
+	if not opt then
+		xCT_DB[frame] = {
+			["point"] = "CENTER",
+			["relativePoint"] = "CENTER",
+			["xOfs"] = 0,
+			["yOfs"] = 0,
+		}
+		opt = xCT_DB[frame]
+		return
+	end
+	
+	opt.width = _G[frame]:GetWidth()
+	opt.height = _G[frame]:GetHeight()
+
+	local point, relativeTo, relativePoint, xOfs, yOfs = _G[frame]:GetPoint()
+	opt.point = point
+	opt.relativePoint = relativePoint
+	opt.xOfs = xOfs
+	opt.yOfs = yOfs
+end
+
+local function RestoreLayout(frame, index)
+	if type(frame) ~= "string" then return end
+	if not _G[frame] then return end
+	if not xCT_DB then xCT_DB = {} end
+
+	local opt = xCT_DB[frame] or nil
+
+	if not opt then
+		xCT_DB[frame] = {
+			["point"] = "CENTER",
+			["relativePoint"] = "CENTER",
+			["xOfs"] = 0,
+			["yOfs"] = 0,
+		}
+		opt = xCT_DB[frame]
+		
+		--defaults
+		if (index == 1) then
+			opt.xOfs = -255
+			opt.yOfs = 70
+		elseif (index==2)then
+			opt.xOfs = 248
+			opt.yOfs = 70
+		elseif (index==3)then
+			opt.xOfs = -7
+			opt.yOfs = -210
+		elseif (index==4)then
+			opt.xOfs = -5
+			opt.yOfs = -100
+		else
+			opt.xOfs = 438
+			opt.yOfs = 131
+		end
+	end
+	
+	if not opt.width then
+		if index == 3 then
+			opt.width = 308
+		elseif index == 4 then
+			opt.width = 650
+		elseif index == 5 then
+			opt.width = 144
+		else
+			opt.width = 230
+		end
+	end
+	_G[frame]:SetWidth(opt.width)
+	
+	if not opt.height then
+		if index == 3 then
+			opt.height = 126
+		elseif index == 4 then
+			opt.height = 109
+		elseif index == 5 then
+			opt.height = 256
+		else
+			opt.height = 228
+		end
+	end
+	_G[frame]:SetHeight(opt.height)
+	
+	_G[frame]:ClearAllPoints()
+	_G[frame]:SetPoint(opt.point, UIParent, opt.relativePoint, opt.xOfs, opt.yOfs)
+end
+
 	
 -- msg flow direction
 local function ScrollDirection()
@@ -250,8 +352,16 @@ local function ScrollDirection()
 		ct.frames[i]:SetInsertMode(ct.mode)
 	end
 end
+
+--function for spam prevention on the event frame
+local function pushEventFrame(msg, name, amount, r, g, b)
+	xCT3:AddMessage(msg, r, g, b)
+end
+
 -- partial resists styler
-local part="-%s (%s %s)"
+local part="-%s (|cFFEFD2D2%s|r %s)"  --regular resists light pink
+local part2="-%s (|cFFD7A9D7%s|r %s)" --spell absorbs/resists light lavander
+
 local r,g,b
 -- the function, handles everything
 local function OnEvent(self,event,subevent,...)
@@ -273,7 +383,7 @@ if(event=="COMBAT_TEXT_UPDATE")then
 		if(arg3>=ct.healtreshold)then
 			if(arg2)then
 				if(COMBAT_TEXT_SHOW_FRIENDLY_NAMES=="1")then
-					xCT2:AddMessage(arg2.." +"..arg3,.1,.75,.1)
+					xCT2:AddMessage("|cFF2AC85E"..arg2:match("^([^-]+)").."|r  +"..arg3,.1,.75,.1)
 				else
 					xCT2:AddMessage("+"..arg3,.1,.75,.1)
 				end
@@ -283,7 +393,7 @@ if(event=="COMBAT_TEXT_UPDATE")then
 		if(arg3>=ct.healtreshold)then
 			if(arg2)then
 				if(COMBAT_TEXT_SHOW_FRIENDLY_NAMES=="1")then
-					xCT2:AddMessage(arg2.." +"..arg3,.1,1,.1)
+					xCT2:AddMessage("|cFF2AC85E"..arg2:match("^([^-]+)").."|r  +"..arg3,.1,1,.1)
 				else
 					xCT2:AddMessage("+"..arg3,.1,1,.1)
 				end
@@ -295,8 +405,7 @@ if(event=="COMBAT_TEXT_UPDATE")then
 		end
 
 	elseif subevent=="SPELL_CAST"then
-		xCT3:AddMessage(arg2,1,.82,0)
-
+		pushEventFrame(arg2, arg2, nil, 1,.82,0)
 	
 	elseif subevent=="MISS"and(COMBAT_TEXT_SHOW_DODGE_PARRY_MISS=="1")then
 		xCT1:AddMessage(MISS,.5,.5,.5)
@@ -360,7 +469,7 @@ if(event=="COMBAT_TEXT_UPDATE")then
 	elseif subevent=="SPELL_RESIST"then
 		if(arg3)then
 			if(COMBAT_TEXT_SHOW_RESISTANCES=="1") then
-				xCT1:AddMessage(part:format(arg2,RESIST,arg3),.5,.3,.5)
+				xCT1:AddMessage(part2:format(arg2,RESIST,arg3),.5,.3,.5)
 			else
 				xCT1:AddMessage(arg2,.75,.3,.85)
 			end
@@ -370,7 +479,7 @@ if(event=="COMBAT_TEXT_UPDATE")then
 	elseif subevent=="SPELL_BLOCK"then
 		if (arg3)then
 			if(COMBAT_TEXT_SHOW_RESISTANCES=="1")then
-				xCT1:AddMessage(part:format(arg2,BLOCK,arg3),.5,.3,.5)
+				xCT1:AddMessage(part2:format(arg2,BLOCK,arg3),.5,.3,.5)
 			else
 				xCT1:AddMessage("-"..arg2,.75,.3,.85)
 			end
@@ -380,7 +489,7 @@ if(event=="COMBAT_TEXT_UPDATE")then
 	elseif subevent=="SPELL_ABSORB"then
 		if(arg3)then
 			if(COMBAT_TEXT_SHOW_RESISTANCES=="1")then
-				xCT1:AddMessage(part:format(arg2,ABSORB,arg3),.5,.3,.5)
+				xCT1:AddMessage(part2:format(arg2,ABSORB,arg3),.5,.3,.5)
 			else
 				xCT1:AddMessage(arg2,.75,.3,.85)
 			end
@@ -391,39 +500,42 @@ if(event=="COMBAT_TEXT_UPDATE")then
 	elseif subevent=="ENERGIZE"and(COMBAT_TEXT_SHOW_ENERGIZE=="1")then
 		if  tonumber(arg2)>0 then
 			if(arg3 and arg3=="MANA" or arg3=="RAGE" or arg3=="FOCUS" or arg3=="ENERGY" or arg3=="RUNIC_POWER" or arg3=="SOUL_SHARDS" or arg3=="HOLY_POWER")then
-				xCT3:AddMessage("+"..arg2.." ".._G[arg3],PowerBarColor[arg3].r,PowerBarColor[arg3].g,PowerBarColor[arg3].b)
+				pushEventFrame("+"..arg2.." ".._G[arg3], _G[arg3], arg2, PowerBarColor[arg3].r,PowerBarColor[arg3].g,PowerBarColor[arg3].b)
 			end
 		end
 
 	elseif subevent=="PERIODIC_ENERGIZE"and(COMBAT_TEXT_SHOW_PERIODIC_ENERGIZE=="1")then
 		if  tonumber(arg2)>0 then
 			if(arg3 and arg3=="MANA" or arg3=="RAGE" or arg3=="FOCUS" or arg3=="ENERGY" or arg3=="RUNIC_POWER" or arg3=="SOUL_SHARDS" or arg3=="HOLY_POWER")then
-				xCT3:AddMessage("+"..arg2.." ".._G[arg3],PowerBarColor[arg3].r,PowerBarColor[arg3].g,PowerBarColor[arg3].b)
+				pushEventFrame("+"..arg2.." ".._G[arg3], _G[arg3], arg2, PowerBarColor[arg3].r,PowerBarColor[arg3].g,PowerBarColor[arg3].b)
 			end
 		end
-	elseif subevent=="SPELL_AURA_START"and(COMBAT_TEXT_SHOW_AURAS=="1")then
-		xCT3:AddMessage("+"..arg2,1,.5,.5)
-	elseif subevent=="SPELL_AURA_END"and(COMBAT_TEXT_SHOW_AURAS=="1")then
-		xCT3:AddMessage("-"..arg2,.5,.5,.5)
-	elseif subevent=="SPELL_AURA_START_HARMFUL"and(COMBAT_TEXT_SHOW_AURAS=="1")then
-		xCT3:AddMessage("+"..arg2,1,.1,.1)
-	elseif subevent=="SPELL_AURA_END_HARMFUL"and(COMBAT_TEXT_SHOW_AURAS=="1")then
-		xCT3:AddMessage("-"..arg2,.1,1,.1)
+	--removed auras because we only want to show the auras we gain ourselves, otherwise this is a spamfest during raids from auras gained by other players
+	--see the ct.auras function below
+	-- elseif subevent=="SPELL_AURA_START"and(COMBAT_TEXT_SHOW_AURAS=="1")then
+		--pushEventFrame("+"..arg2, arg2, nil, 1,.5,.5)
+	-- elseif subevent=="SPELL_AURA_END"and(COMBAT_TEXT_SHOW_AURAS=="1")then
+		--pushEventFrame("-"..arg2, arg2, nil,.5,.5,.5)
+	elseif subevent=="SPELL_AURA_START_HARMFUL"and(COMBAT_TEXT_SHOW_AURAS=="1")and(ct.auras)then
+		pushEventFrame("+"..arg2, arg2, nil,1, .1, .1)
+
+	elseif subevent=="SPELL_AURA_END_HARMFUL"and(COMBAT_TEXT_SHOW_AURAS=="1")and(ct.auras)then
+		pushEventFrame("-"..arg2, arg2, nil, .1, 1, .1)
 
 	elseif subevent=="HONOR_GAINED"and(COMBAT_TEXT_SHOW_HONOR_GAINED=="1")then
 		arg2=tonumber(arg2)
 		if(arg2 and abs(arg2)>1) then
 			arg2=floor(arg2)
 			if (arg2>0)then
-				xCT3:AddMessage(HONOR.." +"..arg2,.1,.1,1)
+				pushEventFrame(HONOR.." +"..arg2, HONOR, arg2, .1,.1,1)
 			end
 		end
 
 	elseif subevent=="FACTION"and(COMBAT_TEXT_SHOW_REPUTATION=="1")then
-		xCT3:AddMessage(arg2.." +"..arg3,.1,.1,1)
+		pushEventFrame(arg2.." +"..arg3, arg2, arg3, .1,.1,1)
 
 	elseif subevent=="SPELL_ACTIVE"and(COMBAT_TEXT_SHOW_REACTIVES=="1")then
-		xCT3:AddMessage(arg2,1,.82,0)
+		pushEventFrame(arg2, arg2, nil, 1,.82,0)
 	end
 end
 
@@ -431,7 +543,8 @@ elseif event=="UNIT_HEALTH"and(COMBAT_TEXT_SHOW_LOW_HEALTH_MANA=="1")then
 	if subevent==ct.unit then
 		if(UnitHealth(ct.unit)/UnitHealthMax(ct.unit)<=COMBAT_TEXT_LOW_HEALTH_THRESHOLD)then
 			if (not lowHealth) then
-				xCT3:AddMessage(HEALTH_LOW,1,.1,.1)
+				pushEventFrame(HEALTH_LOW, HEALTH_LOW, nil, 1,.1,.1)
+				PlaySoundFile("Interface\\AddOns\\xCT\\sounds\\LowHealth.ogg", "Master")
 				lowHealth=true
 			end
 		else
@@ -444,7 +557,8 @@ elseif event=="UNIT_MANA"and(COMBAT_TEXT_SHOW_LOW_HEALTH_MANA=="1")then
 		local _,powerToken=UnitPowerType(ct.unit)
 		if (powerToken=="MANA"and(UnitPower(ct.unit)/UnitPowerMax(ct.unit))<=COMBAT_TEXT_LOW_MANA_THRESHOLD)then
 			if (not lowMana)then
-				xCT3:AddMessage(MANA_LOW,1,.1,.1)
+				pushEventFrame(MANA_LOW, MANA_LOW, nil, 1,.1,.1)
+				PlaySoundFile("Interface\\AddOns\\xCT\\sounds\\LowMana.ogg", "Master")
 				lowMana=true
 			end
 		else
@@ -453,10 +567,10 @@ elseif event=="UNIT_MANA"and(COMBAT_TEXT_SHOW_LOW_HEALTH_MANA=="1")then
 	end
 
 elseif event=="PLAYER_REGEN_ENABLED"and(COMBAT_TEXT_SHOW_COMBAT_STATE=="1")then
-		xCT3:AddMessage("-"..LEAVING_COMBAT,.1,1,.1)
+		pushEventFrame("-"..LEAVING_COMBAT, LEAVING_COMBAT, nil, .1,1,.1)
 
 elseif event=="PLAYER_REGEN_DISABLED"and(COMBAT_TEXT_SHOW_COMBAT_STATE=="1")then
-		xCT3:AddMessage("+"..ENTERING_COMBAT,1,.1,.1)
+		pushEventFrame("+"..ENTERING_COMBAT, ENTERING_COMBAT, nil, 1,.1,.1)
 
 elseif event=="UNIT_COMBO_POINTS"and(COMBAT_TEXT_SHOW_COMBO_POINTS=="1")then
 	if(subevent==ct.unit)then
@@ -466,15 +580,22 @@ elseif event=="UNIT_COMBO_POINTS"and(COMBAT_TEXT_SHOW_COMBO_POINTS=="1")then
 				if (cp==MAX_COMBO_POINTS)then
 					r,g,b=0,.82,1
 				end
-				xCT3:AddMessage(format(COMBAT_TEXT_COMBO_POINTS,cp),r,g,b)
+				pushEventFrame(format(COMBAT_TEXT_COMBO_POINTS,cp), COMBAT_TEXT_COMBO_POINTS, nil, r,g,b)
 			end
 	end
 
 elseif event=="RUNE_POWER_UPDATE"then
 	local arg1,arg2 = subevent,...
-	if(arg2==true)then
+	local start, duration, runeReady = GetRuneCooldown(arg1)
+	if(runeReady)then
+		localruneMapping = {
+			[1] = "BLOOD",
+			[2] = "UNHOLY",
+			[3] = "FROST",
+			[4] = "DEATH",
+		}
 		local rune=GetRuneType(arg1);
-		local msg=COMBAT_TEXT_RUNE[rune];
+		local msg=_G["COMBAT_TEXT_RUNE_"..runeMapping[rune]]
 		if(rune==1)then 
 			r=.75
 			g=0
@@ -486,11 +607,13 @@ elseif event=="RUNE_POWER_UPDATE"then
 		elseif(rune==3)then
 			r=0
 			g=1
-			b=1	
+			b=1
+		elseif(rune==4)then
+			r=0.96
+			g=0.13
+			b=0.98
 		end
-		if(rune and rune<4)then
-			xCT3:AddMessage("+"..msg,r,g,b)
-		end
+		pushEventFrame("+"..msg, msg, nil, r,g,b)
 	end
 
 elseif event=="UNIT_ENTERED_VEHICLE"or event=="UNIT_EXITING_VEHICLE"then
@@ -510,10 +633,66 @@ elseif event=="PLAYER_ENTERING_WORLD"then
 		LimitLines()
 	end
 
-	if(ct.damage or ct.healing)then
+	if(ct.damage or ct.healing or ct.auras)then
 		ct.pguid=UnitGUID"player"
 	end
+
+elseif event=="PLAYER_LOGIN"then
+	if not xCT_DB then xCT_DB = {} end
+	
+	for i=1,numf do
+		RestoreLayout("xCT"..i, i)
+	end
+
+	--set the thresholds
+	COMBAT_TEXT_LOW_HEALTH_THRESHOLD = ct.lowmanathreshold
+	COMBAT_TEXT_LOW_MANA_THRESHOLD = ct.lowhealththreshold
+	
+elseif event=="RAID_BOSS_EMOTE" or event=="RAID_BOSS_WHISPER" or event=="CHAT_MSG_RAID_WARNING" then
+  
+	local msg = subevent
+
+	--http://wow.go-hero.net/framexml/15595/RaidWarning.lua
+	if (event == "RAID_BOSS_EMOTE" or event == "RAID_BOSS_WHISPER") then
+		if _G["CHAT_"..event.."_GET"] then
+			local playerName, displayTime, playSound = ...
+			local body = format(_G["CHAT_"..event.."_GET"]..msg, playerName, playerName)  --No need for pflag, monsters can't be afk, dnd, or GMs.
+			local info = ChatTypeInfo[event]
+			RaidNotice_AddMessage( RaidBossEmoteFrame, body, info, displayTime )
+			if ( playSound ) then
+			  PlaySound("RaidBossEmoteWarning", "Master")
+			end
+		end
+	else
+		--CHAT_MSG_RAID_WARNING
+		local term
+		for tag in string.gmatch(msg, "%b{}") do
+			term = strlower(string.gsub(tag, "[{}]", ""))
+			if ( ICON_TAG_LIST[term] and ICON_LIST[ICON_TAG_LIST[term]] ) then
+				msg = string.gsub(msg, tag, ICON_LIST[ICON_TAG_LIST[term]] .. "0|t")
+			elseif ( GROUP_TAG_LIST[term] ) then
+				local groupIndex = GROUP_TAG_LIST[term]
+				local groupList = "["
+				for i=1, GetNumRaidMembers() do
+				  local name, rank, subgroup, level, class, classFileName = GetRaidRosterInfo(i)
+				  if ( subgroup == groupIndex ) then
+					local classColorTable = RAID_CLASS_COLORS[classFileName]
+					if ( classColorTable ) then
+					  name = string.format("\124cff%.2x%.2x%.2x%s\124r", classColorTable.r*255, classColorTable.g*255, classColorTable.b*255, name)
+					end
+					groupList = groupList..(groupList == "[" and "" or PLAYER_LIST_DELIMITER)..name
+				  end
+				end
+				groupList = groupList.."]"
+				msg = string.gsub(msg, tag, groupList)
+			end
+		end  
+
+		RaidNotice_AddMessage( RaidWarningFrame, msg, ChatTypeInfo["RAID_WARNING"] )
+		PlaySound("RaidWarning", "Master")
+	end
 end
+
 end
 
 -- change damage font (if desired)
@@ -552,8 +731,12 @@ for i=1,numf do
 		f:SetJustifyH(ct.justify_3)
 		f:SetWidth(256)
 		f:SetPoint("CENTER",0,192)
-	else
+	elseif(i==4)then
 		f:SetJustifyH(ct.justify_4)
+		f:SetWidth(650)
+		f:SetPoint("CENTER",0,-192)
+	else
+		f:SetJustifyH(ct.justify_5)
 		f:SetPoint("CENTER",320,0)
 		local a,_,c=f:GetFont()
 		if (ct.damagefontsize=="auto")then
@@ -565,8 +748,79 @@ for i=1,numf do
 		end
 			
 	end
+	--create anchor
+	f.anchor = CreateFrame("Frame", "xCT"..i.."anchor", f)
+	
+	f.anchor:SetWidth(25)
+	f.anchor:SetHeight(25)
+	f.anchor:SetMovable(true)
+	f.anchor:SetClampedToScreen(true)
+	f.anchor:EnableMouse(true)
+
+	f.anchor:ClearAllPoints()
+	f.anchor:SetPoint("TOPLEFT", "xCT"..i, "TOPLEFT", -25, 0)
+	f.anchor:SetFrameStrata("DIALOG")
+	
+	f.anchor:SetBackdrop({
+			bgFile = "Interface/Tooltips/UI-Tooltip-Background",
+			edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
+			tile = true,
+			tileSize = 16,
+			edgeSize = 16,
+			insets = { left = 5, right = 5, top = 5, bottom = 5 }
+	})
+	f.anchor:SetBackdropColor(0.75,0,0,1)
+	f.anchor:SetBackdropBorderColor(0.75,0,0,1)
+
+	f.anchor:SetScript("OnMouseDown", function(frame, button)
+		if frame:GetParent():IsMovable() then
+			frame:GetParent().isMoving = true
+			frame:GetParent():StartMoving()
+		end
+	end)
+
+	f.anchor:SetScript("OnMouseUp", function(frame, button) 
+		if( frame:GetParent().isMoving ) then
+			frame:GetParent().isMoving = nil
+			frame:GetParent():StopMovingOrSizing()
+			SaveLayout(frame:GetParent():GetName())
+		end
+	end)
+	f.anchor:Hide()
+	
 	ct.frames[i] = f
 end
+
+-- turn off blizz ct
+CombatText:UnregisterAllEvents()
+CombatText:SetScript("OnLoad",nil)
+CombatText:SetScript("OnEvent",nil)
+CombatText:SetScript("OnUpdate",nil)
+
+--turn off boss alerts / raid warning
+RaidBossEmoteFrame:UnregisterAllEvents()
+RaidBossEmoteFrame:SetScript("OnLoad",nil)
+RaidBossEmoteFrame:SetScript("OnEvent",nil)
+RaidBossEmoteFrame:SetScript("OnUpdate",nil)
+CinematicFrameRaidBossEmoteFrame:UnregisterAllEvents()
+CinematicFrameRaidBossEmoteFrame:SetScript("OnLoad",nil)
+CinematicFrameRaidBossEmoteFrame:SetScript("OnEvent",nil)
+CinematicFrameRaidBossEmoteFrame:SetScript("OnUpdate",nil)
+RaidWarningFrame:UnregisterAllEvents()
+RaidWarningFrame:SetScript("OnLoad",nil)
+RaidWarningFrame:SetScript("OnEvent",nil)
+RaidWarningFrame:SetScript("OnUpdate",nil)
+
+--redirect any custom addon messages sent to RaidNotice_AddMessage as well 
+local orig_RaidNotice_AddMessage = RaidNotice_AddMessage
+local function customRaidNotice_AddMessage(self, ...)
+	--ignore self that's the frame to send the messages too
+	--print(self:GetName() or 'nil'
+	local msg, color, arg3, arg4 = ...
+	xCT4:AddMessage(msg, color.r, color.g, color.b)
+end
+RaidNotice_AddMessage = customRaidNotice_AddMessage
+
 
 -- register events
 local xCT=CreateFrame"Frame"
@@ -582,18 +836,18 @@ end
 xCT:RegisterEvent"UNIT_ENTERED_VEHICLE"
 xCT:RegisterEvent"UNIT_EXITING_VEHICLE"
 xCT:RegisterEvent"PLAYER_ENTERING_WORLD"
-xCT:SetScript("OnEvent",OnEvent)
+xCT:RegisterEvent"PLAYER_LOGIN"
 
--- turn off blizz ct
-CombatText:UnregisterAllEvents()
-CombatText:SetScript("OnLoad",nil)
-CombatText:SetScript("OnEvent",nil)
-CombatText:SetScript("OnUpdate",nil)
+xCT:RegisterEvent"RAID_BOSS_EMOTE"
+xCT:RegisterEvent"RAID_BOSS_WHISPER"
+xCT:RegisterEvent"CHAT_MSG_RAID_WARNING"
+
+xCT:SetScript("OnEvent",OnEvent)
 
 -- steal external messages sent by other addons using CombatText_AddMessage
 Blizzard_CombatText_AddMessage=CombatText_AddMessage
 function CombatText_AddMessage(message,scrollFunction,r,g,b,displayType,isStaggered)
-	xCT3:AddMessage(message,r,g,b)
+	pushEventFrame(message, nil, nil, r,g,b)
 end
 
 -- force hide blizz damage/healing, if desired
@@ -646,6 +900,9 @@ local StartConfigmode=function()
 			elseif(i==3)then
 				f.fs:SetText(COMBAT_TEXT_LABEL)
 				f.fs:SetTextColor(.1,.1,1,.9)
+			elseif(i==4)then
+				f.fs:SetText("Boss Alerts / Raid Warning")
+				f.fs:SetTextColor(.1,.1,1,.9)
 			else
 				f.fs:SetText(SCORE_DAMAGE_DONE.." / "..SCORE_HEALING_DONE)
 				f.fs:SetTextColor(1,1,0,.9)
@@ -665,22 +922,32 @@ local StartConfigmode=function()
 			f.d:SetTexture(.5,.5,.5)
 			f.d:SetAlpha(.3)
 
-			f.tr=f:CreateTitleRegion()
-			f.tr:SetPoint("TOPLEFT",f,"TOPLEFT",0,0)
-			f.tr:SetPoint("TOPRIGHT",f,"TOPRIGHT",0,0)
-			f.tr:SetHeight(20)
+			-- f.tr=f:CreateTitleRegion()
+			-- f.tr:SetPoint("TOPLEFT",f,"TOPLEFT",0,0)
+			-- f.tr:SetPoint("TOPRIGHT",f,"TOPRIGHT",0,0)
+			-- f.tr:SetHeight(20)
 
 			f:EnableMouse(true)
 			f:RegisterForDrag"LeftButton"
-			f:SetScript("OnDragStart",f.StartSizing)
-			if not(ct.scrollable)then
-			f:SetScript("OnSizeChanged",function(self)
-				self:SetMaxLines(self:GetHeight()/ct.fontsize)
-				self:Clear()
+			f:SetScript("OnDragStart",function(self, button)
+				if self.isMoving then return end
+				self:StartSizing()
 			end)
+			if not(ct.scrollable)then
+				f:SetScript("OnSizeChanged",function(self)
+					if self.isMoving then return end
+					self:SetMaxLines(self:GetHeight()/ct.fontsize)
+					self:Clear()
+				end)
 			end
-
-			f:SetScript("OnDragStop",f.StopMovingOrSizing)
+			f:SetScript("OnDragStop",function(self)
+				if self.isMoving then return end
+				self:StopMovingOrSizing()
+				SaveLayout(self:GetName())
+			end)
+			
+			f.anchor:Show()
+			
 			ct.locked=false
 		end
 		pr("unlocked.")
@@ -703,6 +970,7 @@ local function EndConfigmode()
 		f:EnableMouse(false)
 		f:SetScript("OnDragStart",nil)
 		f:SetScript("OnDragStop",nil)
+		f.anchor:Hide()
 	end
 	ct.locked=true
 	pr("Window positions unsaved, don't forget to reload UI.")
@@ -739,6 +1007,28 @@ local function StartTestMode()
 			elseif(i==3)then
 			ct.frames[i]:AddMessage(COMBAT_TEXT_LABEL,random(255)/255,random(255)/255,random(255)/255)
 			elseif(i==4)then
+				local msg
+				local icon
+				local color={}
+				msg=random(40000)
+				if(ct.icons)then
+					_,_,icon=GetSpellInfo(msg)
+				end
+				msg = "Boss Alerts / Raid Warning"
+				if(icon)then
+					msg=msg.." \124T"..icon..":"..ct.iconsize..":"..ct.iconsize..":0:0:64:64:5:59:5:59\124t"
+					if(ct.damagecolor)then
+						color=ct.dmgcolor[ct.dmindex[random(#ct.dmindex)]]
+					else
+						color={1,1,0}
+					end
+				elseif(ct.damagecolor) and not(ct.icons)then
+					color=ct.dmgcolor[ct.dmindex[random(#ct.dmindex)]]
+				elseif not(ct.damagecolor)then
+					color={1,1,random(0,1)}
+				end
+				ct.frames[i]:AddMessage(msg,unpack(color))
+			elseif(i==5)then
 				local msg
 				local icon
 				local color={}
@@ -816,27 +1106,20 @@ SlashCmdList["XCT"]=function(input)
 			StartTestMode()
 			pr("test mode enabled.")
 		end
-	elseif(input=="mypos")then
-		xCT1:ClearAllPoints()
-		xCT1:SetPoint("CENTER",UIParent, "CENTER", -90, -8)
-		xCT1:SetHeight(142)
-		xCT1:SetWidth(128)
-		xCT2:ClearAllPoints()
-		xCT2:SetPoint("CENTER",UIParent, "CENTER", 90, -8)
-		xCT2:SetHeight(142)
-		xCT2:SetWidth(128)
-		xCT3:ClearAllPoints()
-		xCT3:SetPoint("TOP",UIParent, "TOP", -2, -34)
-		xCT3:SetHeight(264)
-		xCT3:SetWidth(216)
-		xCT4:ClearAllPoints()
-		xCT4:SetPoint("CENTER",UIParent, "CENTER", 444, 152)
-		xCT4:SetHeight(172)
-		xCT4:SetWidth(136)
+	elseif(input=="reset")then
+		for i=1,numf do
+			if _G["xCT"..i] then
+				_G["xCT"..i]:ClearAllPoints()
+				_G["xCT"..i]:SetPoint("CENTER",UIParent, "CENTER", 0, 0)
+				_G["xCT"..i]:SetHeight(128)
+				_G["xCT"..i]:SetWidth(128)
+			end
+		end
 	else
 		pr("use |cffFF0000/xct unlock|r to move and resize frames.")
 		pr("use |cffFF0000/xct lock|r to lock frames.")
 		pr("use |cffFF0000/xct test|r to toggle testmode (sample xCT output).")
+		pr("use |cffFF0000/xct reset|r to reset frame positions.")
 	end
 end
 
@@ -896,7 +1179,7 @@ if(ct.mergeaoespam)then
 						else
 							count=""
 						end
-						xCT4:AddMessage(SQ[k]["queue"]..SQ[k]["msg"]..count, unpack(SQ[k]["color"]))
+						xCT5:AddMessage(SQ[k]["queue"]..SQ[k]["msg"]..count, unpack(SQ[k]["color"]))
 						SQ[k]["queue"]=0
 						SQ[k]["count"]=0
 					end
@@ -906,14 +1189,43 @@ if(ct.mergeaoespam)then
 	end
 end
 
+local unpack,select,time=unpack,select,time
+local	gflags=bit.bor(	COMBATLOG_OBJECT_AFFILIATION_MINE,
+		COMBATLOG_OBJECT_REACTION_FRIENDLY,
+		COMBATLOG_OBJECT_CONTROL_PLAYER,
+		COMBATLOG_OBJECT_TYPE_GUARDIAN
+		)
+			
+-- auras (only show applied, don't show remove notifications cause honestly that's a lot of spam LOL)
+if(ct.auras)then
+	local xCTa=CreateFrame"Frame"
+	if(ct.icons)then
+		ct.blank="Interface\\Addons\\xCT\\blank"
+	end
+
+	local aura=function(self,event,...) 
+		local msg,icon
+	--	local timestamp, eventType, sourceGUID, sourceName, sourceFlags, destGUID, destName, destFlags = select(1,...)
+		local timestamp, eventType, hideCaster, sourceGUID, sourceName, sourceFlags, srcFlags2, destGUID, destName, destFlags, destFlags2 = select(1,...)
+		
+		if (COMBAT_TEXT_SHOW_AURAS=="1") then
+			if(sourceGUID==ct.pguid)or(sourceGUID==UnitGUID"pet")or(sourceFlags==gflags)then
+				if(eventType=="SPELL_AURA_APPLIED") then
+					local spellId,spellName,spellSchool,amount=select(12,...)
+					pushEventFrame("+"..spellName, spellName, nil, 0.39,0.50,0.98)
+				elseif (eventType=="ENCHANT_APPLIED")then
+					local spellName=select(12,...)
+					pushEventFrame("+"..spellName, spellName, nil, 0.39,0.50,0.98)
+				end
+			end
+		end
+	end
+	xCTa:RegisterEvent"COMBAT_LOG_EVENT_UNFILTERED"
+	xCTa:SetScript("OnEvent",aura)
+end
+
 -- damage
 if(ct.damage)then
-	local unpack,select,time=unpack,select,time
-	local	gflags=bit.bor(	COMBATLOG_OBJECT_AFFILIATION_MINE,
- 			COMBATLOG_OBJECT_REACTION_FRIENDLY,
- 			COMBATLOG_OBJECT_CONTROL_PLAYER,
- 			COMBATLOG_OBJECT_TYPE_GUARDIAN
- 			)
 	local xCTd=CreateFrame"Frame"
 	if(ct.damagecolor)then
 		ct.dmgcolor={}
@@ -954,7 +1266,7 @@ if(ct.damage)then
 						msg=msg.." \124T"..icon..":"..ct.iconsize..":"..ct.iconsize..":0:0:64:64:5:59:5:59\124t"
 					end
 	
-					xCT4:AddMessage(msg)
+					xCT5:AddMessage(msg)
 				end
 			elseif(eventType=="RANGE_DAMAGE")then
 				local spellId,_,_,amount,_,_,_,_,_,critical=select(12,...)
@@ -969,7 +1281,7 @@ if(ct.damage)then
 						msg=msg.." \124T"..icon..":"..ct.iconsize..":"..ct.iconsize..":0:0:64:64:5:59:5:59\124t"
 					end
 	
-					xCT4:AddMessage(msg)
+					xCT5:AddMessage(msg)
 				end
 	
 			elseif(eventType=="SPELL_DAMAGE")or(eventType=="SPELL_PERIODIC_DAMAGE" and ct.dotdamage)then
@@ -1017,7 +1329,7 @@ if(ct.damage)then
 						SQ[spellId]["locked"]=false
 						return
 					end
-					xCT4:AddMessage(amount..""..msg,unpack(color))
+					xCT5:AddMessage(amount..""..msg,unpack(color))
 				end
 	
 			elseif(eventType=="SWING_MISSED")then
@@ -1033,7 +1345,7 @@ if(ct.damage)then
 					missType=missType.." \124T"..icon..":"..ct.iconsize..":"..ct.iconsize..":0:0:64:64:5:59:5:59\124t"
 				end
 	
-				xCT4:AddMessage(missType)
+				xCT5:AddMessage(missType)
 	
 			elseif(eventType=="SPELL_MISSED")or(eventType=="RANGE_MISSED")then
 				local spellId,_,_,missType,_ = select(12,...)
@@ -1042,7 +1354,7 @@ if(ct.damage)then
 					icon=GetSpellTexture(spellId)
 					missType=missType.." \124T"..icon..":"..ct.iconsize..":"..ct.iconsize..":0:0:64:64:5:59:5:59\124t"
 				end 
-				xCT4:AddMessage(missType)
+				xCT5:AddMessage(missType)
 	
 			elseif(eventType=="SPELL_DISPEL")and ct.dispel then
 				local target,_, _, id, effect, _, etype = select(12,...)
@@ -1062,8 +1374,8 @@ if(ct.damage)then
 				else
 					color={1,0,.5}
 				end
-				xCT3:AddMessage(ACTION_SPELL_DISPEL..": "..effect..msg,unpack(color))
-			
+				pushEventFrame(ACTION_SPELL_DISPEL..": "..effect..msg, ACTION_SPELL_DISPEL..": "..effect, nil, unpack(color))
+
 			elseif(eventType=="SPELL_INTERRUPT")and ct.interrupt then
 				local target,_, _, id, effect = select(12,...)
 				local color={1,.5,0}
@@ -1077,10 +1389,10 @@ if(ct.damage)then
 				else
 					msg=""
 				end
-				xCT3:AddMessage(ACTION_SPELL_INTERRUPT..": "..effect..msg,unpack(color))
+				pushEventFrame(ACTION_SPELL_INTERRUPT..": "..effect..msg, ACTION_SPELL_INTERRUPT..": "..effect, nil, unpack(color))
 			elseif(eventType=="PARTY_KILL") and ct.killingblow then
 				local tname=select(9,...)
-				xCT3:AddMessage(ACTION_PARTY_KILL..": "..tname, .2, 1, .2)
+				pushEventFrame(ACTION_PARTY_KILL..": "..tname, ACTION_PARTY_KILL..": "..tname, nil, .2, 1, .2)
 			end
 			
 		end
@@ -1091,7 +1403,6 @@ end
 
 -- healing
 if(ct.healing)then
-	local unpack,select,time=unpack,select,time
 	local xCTh=CreateFrame"Frame"
 	if(ct.icons)then
 		ct.blank="Interface\\Addons\\xCT\\blank"
@@ -1140,7 +1451,7 @@ if(ct.healing)then
 							SQ[spellId]["locked"]=false
 							return
 					end 
-						xCT4:AddMessage(amount..""..msg,unpack(color))
+						xCT5:AddMessage(amount..""..msg,unpack(color))
 					end
 				end
 			end
