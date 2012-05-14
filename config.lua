@@ -49,4 +49,6 @@ ns.config={
 	["killingblow"] = true,		-- tells you about your killingblows (works only with ["damage"] = true,)
 	["dispel"] = true,		-- tells you about your dispels (works only with ["damage"] = true,)
 	["interrupt"] = true,		-- tells you about your interrupts (works only with ["damage"] = true,)
+	["eventspam"] = true,		-- enable spam protection on the event frame that has various messages like mana, rage, auras, runes, reputation etc..
+	["eventspamtime"] = 3,		-- time in seconds that event spam messages will be merged, 3 is good 1 is minimum
 }
