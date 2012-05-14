@@ -266,6 +266,7 @@ end
 ----------------------	
 --BEGIN CORE ADDON
 ----------------------
+local SQ, EQ = {}, {}
 
 local numf
 if(ct.damage or ct.healing)then
@@ -374,7 +375,7 @@ local function RestoreLayout(frame, index)
 		elseif index == 4 then
 			opt.width = 650
 		elseif index == 5 then
-			opt.width = 144
+			opt.width = 169
 		else
 			opt.width = 230
 		end
@@ -413,17 +414,19 @@ local function ScrollDirection()
 end
 
 --function for spam prevention on the event frame
-local function pushEventFrame(msg, name, amount, r, g, b)
+local function pushEventFrame(msg, name, amount, style, r, g, b, insertBefore)
 	if (ct.eventspam and msg and name) then
 		if not EQ[name] then EQ[name] = {} end
 		EQ[name]["locked"]=true
-		EQ[name]["queue"]=0
-		if name and amount and tonumber(amount) and tonumber(amount) > 0 then
+		if not EQ[name]["queue"] then EQ[name]["queue"] = 0 end
+		if tonumber(amount) and tonumber(amount) > 0 then
 			EQ[name]["queue"] = EQ[name]["queue"] + tonumber(amount)
 		end
 		EQ[name]["msg"]=msg
+		EQ[name]["style"]=style
+		if insertBefore then EQ[name]["insertBefore"] = true end
 		EQ[name]["color"]={r, g, b}
-		if not EQ[name]["count"] then
+		if not EQ[name]["count"] or EQ[name]["count"] == 0 then
 			EQ[name]["count"] = 1
 			EQ[name]["utime"]=time()
 		else
@@ -482,7 +485,7 @@ if(event=="COMBAT_TEXT_UPDATE")then
 		end
 
 	elseif subevent=="SPELL_CAST"then
-		pushEventFrame(arg2, arg2, nil, 1, .82, 0)
+		--pushEventFrame(arg2, arg2, nil, nil, 1, .82, 0)
 	
 	elseif subevent=="MISS"and(COMBAT_TEXT_SHOW_DODGE_PARRY_MISS=="1")then
 		xCT1:AddMessage(MISS,.5,.5,.5)
@@ -577,14 +580,14 @@ if(event=="COMBAT_TEXT_UPDATE")then
 	elseif subevent=="ENERGIZE"and(COMBAT_TEXT_SHOW_ENERGIZE=="1")then
 		if  tonumber(arg2)>0 then
 			if(arg3 and arg3=="MANA" or arg3=="RAGE" or arg3=="FOCUS" or arg3=="ENERGY" or arg3=="RUNIC_POWER" or arg3=="SOUL_SHARDS" or arg3=="HOLY_POWER")then
-				pushEventFrame("+"..arg2.." ".._G[arg3], _G[arg3], arg2, PowerBarColor[arg3].r, PowerBarColor[arg3].g, PowerBarColor[arg3].b)
+				pushEventFrame("+"..arg2.."  ".._G[arg3], _G[arg3], arg2, "+%2s  %1s", PowerBarColor[arg3].r, PowerBarColor[arg3].g, PowerBarColor[arg3].b, true)
 			end
 		end
 
 	elseif subevent=="PERIODIC_ENERGIZE"and(COMBAT_TEXT_SHOW_PERIODIC_ENERGIZE=="1")then
 		if  tonumber(arg2)>0 then
 			if(arg3 and arg3=="MANA" or arg3=="RAGE" or arg3=="FOCUS" or arg3=="ENERGY" or arg3=="RUNIC_POWER" or arg3=="SOUL_SHARDS" or arg3=="HOLY_POWER")then
-				pushEventFrame("+"..arg2.." ".._G[arg3], _G[arg3], arg2, PowerBarColor[arg3].r, PowerBarColor[arg3].g, PowerBarColor[arg3].b)
+				pushEventFrame("+"..arg2.." ".._G[arg3], _G[arg3], arg2, "+%2s  %1s", PowerBarColor[arg3].r, PowerBarColor[arg3].g, PowerBarColor[arg3].b, true)
 			end
 		end
 	-- elseif subevent=="SPELL_AURA_START"and(COMBAT_TEXT_SHOW_AURAS=="1")then
@@ -602,15 +605,15 @@ if(event=="COMBAT_TEXT_UPDATE")then
 		if(arg2 and abs(arg2)>1) then
 			arg2=floor(arg2)
 			if (arg2>0)then
-				pushEventFrame(HONOR.." +"..arg2, HONOR, arg2, .1, .1, 1)
+				pushEventFrame(HONOR.."  +"..arg2, HONOR, arg2, "%1s  +%2s", .1, .1, 1)
 			end
 		end
 
 	elseif subevent=="FACTION"and(COMBAT_TEXT_SHOW_REPUTATION=="1")then
-		pushEventFrame(arg2.." +"..arg3, arg2, arg3, .1, .1, 1)
+		pushEventFrame(arg2.."  +"..arg3, arg2, arg3, "%1s  +%2s", .1, .1, 1)
 
 	elseif subevent=="SPELL_ACTIVE"and(COMBAT_TEXT_SHOW_REACTIVES=="1")then
-		pushEventFrame(arg2, arg2, nil, 1, .82, 0)
+		--pushEventFrame(arg2, arg2, nil, nil, 1, .82, 0)
 	end
 end
 
@@ -919,7 +922,7 @@ xCT:SetScript("OnEvent",OnEvent)
 -- steal external messages sent by other addons using CombatText_AddMessage
 Blizzard_CombatText_AddMessage=CombatText_AddMessage
 function CombatText_AddMessage(message,scrollFunction,r,g,b,displayType,isStaggered)
-	pushEventFrame(message, message, nil, r, g, b)
+	pushEventFrame(message, message, nil, nil, r, g, b)
 end
 
 -- force hide blizz damage/healing, if desired
@@ -1210,25 +1213,24 @@ if(ct.stopvespam and ct.myclass=="PRIEST")then
 end
 
 -- spam merger (event and aoe)
-local SQ, EQ
-
 if(ct.mergeaoespam or ct.eventspam) then
 	local pairs=pairs
 	
 	if ct.eventspam then
-		EQ={}
 		if (not ct.eventspamtime or ct.eventspamtime<1) then
 			ct.eventspamtime=1
 		end
 	end
 	if ct.mergeaoespam then
-		SQ={}
 		if (not ct.mergeaoespamtime or ct.mergeaoespamtime<1) then
 			ct.mergeaoespamtime=1
 		end
 		for k,v in pairs(ct.aoespam) do
 			SQ[k]={queue = 0, msg = "", color={}, count=0, utime=0, locked=false}
 		end
+		SQ["SWING_DAMAGE"]={queue = 0, msg = "", color={}, count=0, utime=0, locked=false}
+		SQ["RANGE_DAMAGE"]={queue = 0, msg = "", color={}, count=0, utime=0, locked=false}
+		
 		ct.SpamQueue=function(spellId, add)
 			local amount
 			local spam=SQ[spellId]["queue"]
@@ -1253,7 +1255,7 @@ if(ct.mergeaoespam or ct.eventspam) then
 			
 			if ct.eventspam then
 				for k,v in pairs(EQ) do
-					if not EQ[k]["locked"] and EQ[k]["utime"]+ct.eventspamtime<=utime then
+					if not EQ[k]["locked"] and EQ[k]["count"] > 0 and EQ[k]["utime"]+ct.eventspamtime<=utime then
 						if EQ[k]["count"]>1 then
 							count=" |cffFFFFFF x "..EQ[k]["count"].."|r"
 						else
@@ -1264,27 +1266,34 @@ if(ct.mergeaoespam or ct.eventspam) then
 						else
 							queue = ""
 						end
-						xCT5:AddMessage(queue..EQ[k]["msg"]..count, unpack(EQ[k]["color"]))
+						
+						if EQ[k]["style"] and EQ[k]["queue"]>0 then
+							if EQ[k]["insertBefore"] then
+								xCT3:AddMessage(string.format(EQ[k]["style"], EQ[k]["queue"], k)..count, unpack(EQ[k]["color"]))
+							else
+								xCT3:AddMessage(string.format(EQ[k]["style"], k, EQ[k]["queue"])..count, unpack(EQ[k]["color"]))
+							end
+						else
+							xCT3:AddMessage(queue..EQ[k]["msg"]..count, unpack(EQ[k]["color"]))
+						end
+
 						EQ[k]["queue"]=0
 						EQ[k]["count"]=0
+						EQ[k]["style"]=nil
+						EQ[k]["insertBefore"]=nil
 					end
 				end
 			end
 
 			if ct.mergeaoespam then
 				for k,v in pairs(SQ) do
-					if not SQ[k]["locked"] and SQ[k]["utime"]+ct.mergeaoespamtime<=utime then
+					if not SQ[k]["locked"] and SQ[k]["queue"]>0 and SQ[k]["utime"]+ct.mergeaoespamtime<=utime then
 						if SQ[k]["count"]>1 then
 							count=" |cffFFFFFF x "..SQ[k]["count"].."|r"
 						else
 							count=""
 						end
-						if SQ[k]["queue"]>0 then
-							queue = SQ[k]["queue"]
-						else
-							queue = ""
-						end
-						xCT5:AddMessage(queue..SQ[k]["msg"]..count, unpack(SQ[k]["color"]))
+						xCT5:AddMessage(SQ[k]["queue"]..SQ[k]["msg"]..count, unpack(SQ[k]["color"]))
 						SQ[k]["queue"]=0
 						SQ[k]["count"]=0
 					end
@@ -1328,12 +1337,14 @@ if ct.auras or ct.damage or ct.healing then
 		if (ct.auras and COMBAT_TEXT_SHOW_AURAS=="1") then
 			-- auras (only show applied, don't show remove notifications cause honestly that's a lot of spam LOL)
 			if(sourceGUID==ct.pguid)or(sourceGUID==UnitGUID"pet")or(sourceFlags==gflags)then
-				if(eventType=="SPELL_AURA_APPLIED") then
-					local spellId,spellName,spellSchool,amount=select(12,...)
-					pushEventFrame("+"..spellName, "+"..spellName, nil, 0.39, 0.50, 0.98)
-				elseif (eventType=="ENCHANT_APPLIED")then
-					local spellName=select(12,...)
-					pushEventFrame("+"..spellName, "+"..spellName, nil, 0.39, 0.50, 0.98)
+				if (destGUID==ct.pguid) or (destGUID==UnitGUID"pet") then
+					if(eventType=="SPELL_AURA_APPLIED") then
+						local spellId,spellName,spellSchool,amount=select(12,...)
+						pushEventFrame("+"..spellName, "+"..spellName, nil, nil, 0.39, 0.50, 0.98)
+					elseif (eventType=="ENCHANT_APPLIED")then
+						local spellName=select(12,...)
+						pushEventFrame("+"..spellName, "+"..spellName, nil, nil, 0.39, 0.50, 0.98)
+					end
 				end
 			end
 		end
@@ -1344,6 +1355,8 @@ if ct.auras or ct.damage or ct.healing then
 				if(eventType=="SWING_DAMAGE")then
 					local amount,_,_,_,_,_,critical=select(12,...)
 					if(amount>=ct.treshold)then
+						local rawamount=amount
+						local queueMsg = ""
 						msg=amount
 						if (critical) then
 							msg=ct.critprefix..msg..ct.critpostfix
@@ -1356,14 +1369,27 @@ if ct.auras or ct.damage or ct.healing then
 							--	_,_,icon=GetSpellInfo(6603)
 								icon=GetSpellTexture(6603)
 							end
-							msg=msg.." \124T"..icon..":"..ct.iconsize..":"..ct.iconsize..":0:0:64:64:5:59:5:59\124t"
+							queueMsg=" \124T"..icon..":"..ct.iconsize..":"..ct.iconsize..":0:0:64:64:5:59:5:59\124t"
 						end
-		
+						if ct.mergeaoespam then
+							SQ["SWING_DAMAGE"]["locked"]=true
+							SQ["SWING_DAMAGE"]["queue"]=ct.SpamQueue("SWING_DAMAGE", tonumber(rawamount))
+							SQ["SWING_DAMAGE"]["msg"]=queueMsg
+							SQ["SWING_DAMAGE"]["color"]={1,1,1}
+							SQ["SWING_DAMAGE"]["count"]=SQ["SWING_DAMAGE"]["count"]+1
+							if SQ["SWING_DAMAGE"]["count"]==1 then
+								SQ["SWING_DAMAGE"]["utime"]=time()
+							end
+							SQ["SWING_DAMAGE"]["locked"]=false
+							return
+						end
 						xCT5:AddMessage(msg)
 					end
 				elseif(eventType=="RANGE_DAMAGE")then
 					local spellId,_,_,amount,_,_,_,_,_,critical=select(12,...)
 					if(amount>=ct.treshold)then
+						local rawamount=amount
+						local queueMsg = ""
 						msg=amount
 						if (critical) then
 							msg=ct.critprefix..msg..ct.critpostfix
@@ -1371,9 +1397,20 @@ if ct.auras or ct.damage or ct.healing then
 						if(ct.icons)then
 							--_,_,icon=GetSpellInfo(spellId)
 							icon=GetSpellTexture(spellId)
-							msg=msg.." \124T"..icon..":"..ct.iconsize..":"..ct.iconsize..":0:0:64:64:5:59:5:59\124t"
+							queueMsg=" \124T"..icon..":"..ct.iconsize..":"..ct.iconsize..":0:0:64:64:5:59:5:59\124t"
 						end
-		
+						if ct.mergeaoespam then
+							SQ["RANGE_DAMAGE"]["locked"]=true
+							SQ["RANGE_DAMAGE"]["queue"]=ct.SpamQueue("RANGE_DAMAGE", tonumber(rawamount))
+							SQ["RANGE_DAMAGE"]["msg"]=queueMsg
+							SQ["RANGE_DAMAGE"]["color"]={1,1,1}
+							SQ["RANGE_DAMAGE"]["count"]=SQ["RANGE_DAMAGE"]["count"]+1
+							if SQ["RANGE_DAMAGE"]["count"]==1 then
+								SQ["RANGE_DAMAGE"]["utime"]=time()
+							end
+							SQ["RANGE_DAMAGE"]["locked"]=false
+							return
+						end						
 						xCT5:AddMessage(msg)
 					end
 		
@@ -1486,7 +1523,7 @@ if ct.auras or ct.damage or ct.healing then
 
 				elseif(eventType=="PARTY_KILL") and ct.killingblow then
 					local tname=select(9,...)
-					pushEventFrame(ACTION_PARTY_KILL..": "..tname, ACTION_PARTY_KILL, nil, .2, 1, .2)
+					pushEventFrame(ACTION_PARTY_KILL..": "..tname, ACTION_PARTY_KILL, nil, nil, .2, 1, .2)
 				end
 				
 			end
