@@ -973,7 +973,7 @@ local StartConfigmode=function()
 				f.fs:SetText(COMBAT_TEXT_LABEL)
 				f.fs:SetTextColor(.1,.1,1,.9)
 			elseif(i==4)then
-				f.fs:SetText(RAID_BOSS_MESSAGE.."/"..CHAT_MSG_RAID_WARNING)
+				f.fs:SetText(RAID_BOSS_MESSAGE.." / "..CHAT_MSG_RAID_WARNING)
 				f.fs:SetTextColor(.1,.1,1,.9)
 			else
 				f.fs:SetText(SCORE_DAMAGE_DONE.." / "..SCORE_HEALING_DONE)
@@ -1081,7 +1081,7 @@ local function StartTestMode()
 				if(ct.icons)then
 					_,_,icon=GetSpellInfo(msg)
 				end
-				msg = RAID_BOSS_MESSAGE.."/"..CHAT_MSG_RAID_WARNING
+				msg = RAID_BOSS_MESSAGE.." / "..CHAT_MSG_RAID_WARNING
 				if(icon)then
 					msg=msg.." \124T"..icon..":"..ct.iconsize..":"..ct.iconsize..":0:0:64:64:5:59:5:59\124t"
 					if(ct.damagecolor)then
