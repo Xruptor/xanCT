@@ -46,6 +46,8 @@ ns.config={
 	["dkrunes"] = true,		-- show deatchknight rune recharge
 	["mergeaoespam"] = true,	-- merges multiple aoe spam into single message, can be useful for dots too.
 	["mergeaoespamtime"] = 4,	-- time in seconds aoe spell will be merged into single message. minimum is 1.
+	["mergeswingdamage"] = true, --merge swing (auto-attack or melee) damage using the spam assistance.  This is also called white damage.
+	["mergerangedamage"] = true, --merge range (auto-attack or bow) damage using the spam assistance.  This is also called white damage.
 	["killingblow"] = true,		-- tells you about your killingblows (works only with ["damage"] = true,)
 	["dispel"] = true,		-- tells you about your dispels (works only with ["damage"] = true,)
 	["interrupt"] = true,		-- tells you about your interrupts (works only with ["damage"] = true,)

@@ -415,7 +415,7 @@ local function ScrollDirection()
 end
 
 --function for spam prevention on the event frame
-local function pushEventFrame(msg, name, amount, style, r, g, b, insertBefore)
+local function pushEventFrame(msg, name, amount, style, r, g, b, insertBefore, bypassTime)
 	if (ct.eventspam and msg and name) then
 		if not EQ[name] then EQ[name] = {} end
 		EQ[name]["locked"]=true
@@ -426,6 +426,7 @@ local function pushEventFrame(msg, name, amount, style, r, g, b, insertBefore)
 		EQ[name]["msg"]=msg
 		EQ[name]["style"]=style
 		if insertBefore then EQ[name]["insertBefore"] = true end
+		if bypassTime then EQ[name]["bypassTime"] = bypassTime end
 		EQ[name]["color"]={r, g, b}
 		if not EQ[name]["count"] or EQ[name]["count"] == 0 then
 			EQ[name]["count"] = 1
@@ -487,14 +488,15 @@ if(event=="COMBAT_TEXT_UPDATE")then
 
 	elseif subevent=="SPELL_CAST"then
 		xCT3:AddMessage(arg2, 1, .82, 0)
+		reactiveSpell[arg2] = true --prevent future parsing of this on the spam queue
 		--remove from event queue spam if it's in there
 		if EQ and EQ[arg2] and EQ[arg2]["count"] > 0 then
 			EQ[arg2]["count"]=0
 			EQ[arg2]["queue"]=0
 			EQ[arg2]["style"]=nil
 			EQ[arg2]["insertBefore"]=nil
+			EQ[arg2]["bypassTime"]=nil
 		end
-		reactiveSpell[arg2] = true --prevent future parsing of this on the spam queue
 		
 	elseif subevent=="MISS"and(COMBAT_TEXT_SHOW_DODGE_PARRY_MISS=="1")then
 		xCT1:AddMessage(MISS,.5,.5,.5)
@@ -623,14 +625,15 @@ if(event=="COMBAT_TEXT_UPDATE")then
 
 	elseif subevent=="SPELL_ACTIVE"and(COMBAT_TEXT_SHOW_REACTIVES=="1")then
 		xCT3:AddMessage(arg2, 1, .82, 0)
+		reactiveSpell[arg2] = true --prevent future parsing of this on the spam queue
 		--remove from event queue spam if it's in there
 		if EQ and EQ[arg2] and EQ[arg2]["count"] > 0 then
 			EQ[arg2]["count"]=0
 			EQ[arg2]["queue"]=0
 			EQ[arg2]["style"]=nil
 			EQ[arg2]["insertBefore"]=nil
+			EQ[arg2]["bypassTime"]=nil
 		end
-		reactiveSpell[arg2] = true --prevent future parsing of this on the spam queue
 	end
 end
 
@@ -1273,7 +1276,13 @@ if(ct.mergeaoespam or ct.eventspam) then
 			if ct.eventspam then
 				for k,v in pairs(EQ) do
 					if not reactiveSpell[k] then
-						if not EQ[k]["locked"] and EQ[k]["count"] > 0 and EQ[k]["utime"]+ct.eventspamtime<=utime then
+						local spamTimeChk
+						if EQ[k]["bypassTime"] then
+							spamTimeChk = EQ[k]["bypassTime"]
+						else
+							spamTimeChk = ct.eventspamtime
+						end
+						if not EQ[k]["locked"] and EQ[k]["count"] > 0 and EQ[k]["utime"]+spamTimeChk<=utime then
 							if EQ[k]["count"]>1 then
 								count=" |cffFFFFFF x "..EQ[k]["count"].."|r"
 							else
@@ -1299,6 +1308,7 @@ if(ct.mergeaoespam or ct.eventspam) then
 							EQ[k]["queue"]=0
 							EQ[k]["style"]=nil
 							EQ[k]["insertBefore"]=nil
+							EQ[k]["bypassTime"]=nil
 						end
 					end
 				end
@@ -1359,10 +1369,14 @@ if ct.auras or ct.damage or ct.healing then
 				if (destGUID==ct.pguid) or (destGUID==UnitGUID"pet") then
 					if(eventType=="SPELL_AURA_APPLIED") then
 						local spellId,spellName,spellSchool,amount=select(12,...)
-						pushEventFrame("+"..spellName, spellName, nil, "+%s", 0.39, 0.50, 0.98)
+						if not reactiveSpell[spellName] then
+							pushEventFrame("+"..spellName, spellName, nil, "+%s", 0.39, 0.50, 0.98, nil, 0.5)
+						end
 					elseif (eventType=="ENCHANT_APPLIED")then
 						local spellName=select(12,...)
-						pushEventFrame("+"..spellName, spellName, nil, "+%s", 0.39, 0.50, 0.98)
+						if not reactiveSpell[spellName] then
+							pushEventFrame("+"..spellName, spellName, nil, "+%s", 0.39, 0.50, 0.98, nil, 0.5)
+						end
 					end
 				end
 			end
@@ -1388,7 +1402,7 @@ if ct.auras or ct.damage or ct.healing then
 							end
 							queueMsg=" \124T"..icon..":"..ct.iconsize..":"..ct.iconsize..":0:0:64:64:5:59:5:59\124t"
 						end
-						if ct.mergeaoespam then
+						if ct.mergeaoespam and ct.mergeswingdamage then
 							SQ["SWING_DAMAGE"]["locked"]=true
 							SQ["SWING_DAMAGE"]["queue"]=ct.SpamQueue("SWING_DAMAGE", tonumber(rawamount))
 							SQ["SWING_DAMAGE"]["msg"]=queueMsg
@@ -1400,6 +1414,7 @@ if ct.auras or ct.damage or ct.healing then
 							SQ["SWING_DAMAGE"]["locked"]=false
 							return
 						end
+						msg=msg..queueMsg
 						xCT5:AddMessage(msg)
 					end
 				elseif(eventType=="RANGE_DAMAGE")then
@@ -1415,7 +1430,7 @@ if ct.auras or ct.damage or ct.healing then
 							icon=GetSpellTexture(spellId)
 							queueMsg=" \124T"..icon..":"..ct.iconsize..":"..ct.iconsize..":0:0:64:64:5:59:5:59\124t"
 						end
-						if ct.mergeaoespam then
+						if ct.mergeaoespam and ct.mergerangedamage then
 							SQ["RANGE_DAMAGE"]["locked"]=true
 							SQ["RANGE_DAMAGE"]["queue"]=ct.SpamQueue("RANGE_DAMAGE", tonumber(rawamount))
 							SQ["RANGE_DAMAGE"]["msg"]=queueMsg
@@ -1426,7 +1441,8 @@ if ct.auras or ct.damage or ct.healing then
 							end
 							SQ["RANGE_DAMAGE"]["locked"]=false
 							return
-						end						
+						end
+						msg=msg..queueMsg						
 						xCT5:AddMessage(msg)
 					end
 		
