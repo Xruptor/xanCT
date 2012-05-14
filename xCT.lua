@@ -267,6 +267,7 @@ end
 --BEGIN CORE ADDON
 ----------------------
 local SQ, EQ = {}, {}
+local reactiveSpell = {}
 
 local numf
 if(ct.damage or ct.healing)then
@@ -485,8 +486,16 @@ if(event=="COMBAT_TEXT_UPDATE")then
 		end
 
 	elseif subevent=="SPELL_CAST"then
-		--pushEventFrame(arg2, arg2, nil, nil, 1, .82, 0)
-	
+		xCT3:AddMessage(arg2, 1, .82, 0)
+		--remove from event queue spam if it's in there
+		if EQ and EQ[arg2] and EQ[arg2]["count"] > 0 then
+			EQ[arg2]["count"]=0
+			EQ[arg2]["queue"]=0
+			EQ[arg2]["style"]=nil
+			EQ[arg2]["insertBefore"]=nil
+		end
+		reactiveSpell[arg2] = true --prevent future parsing of this on the spam queue
+		
 	elseif subevent=="MISS"and(COMBAT_TEXT_SHOW_DODGE_PARRY_MISS=="1")then
 		xCT1:AddMessage(MISS,.5,.5,.5)
 	elseif subevent=="DODGE"and(COMBAT_TEXT_SHOW_DODGE_PARRY_MISS=="1")then
@@ -613,7 +622,15 @@ if(event=="COMBAT_TEXT_UPDATE")then
 		pushEventFrame(arg2.."  +"..arg3, arg2, arg3, "%1s  +%2s", .1, .1, 1)
 
 	elseif subevent=="SPELL_ACTIVE"and(COMBAT_TEXT_SHOW_REACTIVES=="1")then
-		--pushEventFrame(arg2, arg2, nil, nil, 1, .82, 0)
+		xCT3:AddMessage(arg2, 1, .82, 0)
+		--remove from event queue spam if it's in there
+		if EQ and EQ[arg2] and EQ[arg2]["count"] > 0 then
+			EQ[arg2]["count"]=0
+			EQ[arg2]["queue"]=0
+			EQ[arg2]["style"]=nil
+			EQ[arg2]["insertBefore"]=nil
+		end
+		reactiveSpell[arg2] = true --prevent future parsing of this on the spam queue
 	end
 end
 
@@ -1255,32 +1272,34 @@ if(ct.mergeaoespam or ct.eventspam) then
 			
 			if ct.eventspam then
 				for k,v in pairs(EQ) do
-					if not EQ[k]["locked"] and EQ[k]["count"] > 0 and EQ[k]["utime"]+ct.eventspamtime<=utime then
-						if EQ[k]["count"]>1 then
-							count=" |cffFFFFFF x "..EQ[k]["count"].."|r"
-						else
-							count=""
-						end
-						if EQ[k]["queue"]>0 then
-							queue = EQ[k]["queue"]
-						else
-							queue = ""
-						end
-						
-						if EQ[k]["style"] and EQ[k]["queue"]>0 then
-							if EQ[k]["insertBefore"] then
-								xCT3:AddMessage(string.format(EQ[k]["style"], EQ[k]["queue"], k)..count, unpack(EQ[k]["color"]))
+					if not reactiveSpell[k] then
+						if not EQ[k]["locked"] and EQ[k]["count"] > 0 and EQ[k]["utime"]+ct.eventspamtime<=utime then
+							if EQ[k]["count"]>1 then
+								count=" |cffFFFFFF x "..EQ[k]["count"].."|r"
 							else
-								xCT3:AddMessage(string.format(EQ[k]["style"], k, EQ[k]["queue"])..count, unpack(EQ[k]["color"]))
+								count=""
 							end
-						else
-							xCT3:AddMessage(queue..EQ[k]["msg"]..count, unpack(EQ[k]["color"]))
-						end
+							if EQ[k]["queue"]>0 then
+								queue = EQ[k]["queue"]
+							else
+								queue = ""
+							end
+							
+							if EQ[k]["style"] and EQ[k]["queue"]>0 then
+								if EQ[k]["insertBefore"] then
+									xCT3:AddMessage(string.format(EQ[k]["style"], EQ[k]["queue"], k)..count, unpack(EQ[k]["color"]))
+								else
+									xCT3:AddMessage(string.format(EQ[k]["style"], k, EQ[k]["queue"])..count, unpack(EQ[k]["color"]))
+								end
+							else
+								xCT3:AddMessage(queue..EQ[k]["msg"]..count, unpack(EQ[k]["color"]))
+							end
 
-						EQ[k]["queue"]=0
-						EQ[k]["count"]=0
-						EQ[k]["style"]=nil
-						EQ[k]["insertBefore"]=nil
+							EQ[k]["count"]=0
+							EQ[k]["queue"]=0
+							EQ[k]["style"]=nil
+							EQ[k]["insertBefore"]=nil
+						end
 					end
 				end
 			end
@@ -1340,10 +1359,10 @@ if ct.auras or ct.damage or ct.healing then
 				if (destGUID==ct.pguid) or (destGUID==UnitGUID"pet") then
 					if(eventType=="SPELL_AURA_APPLIED") then
 						local spellId,spellName,spellSchool,amount=select(12,...)
-						pushEventFrame("+"..spellName, "+"..spellName, nil, nil, 0.39, 0.50, 0.98)
+						pushEventFrame("+"..spellName, spellName, nil, "+%s", 0.39, 0.50, 0.98)
 					elseif (eventType=="ENCHANT_APPLIED")then
 						local spellName=select(12,...)
-						pushEventFrame("+"..spellName, "+"..spellName, nil, nil, 0.39, 0.50, 0.98)
+						pushEventFrame("+"..spellName, spellName, nil, "+%s", 0.39, 0.50, 0.98)
 					end
 				end
 			end
@@ -1365,8 +1384,6 @@ if ct.auras or ct.damage or ct.healing then
 							if(sourceGUID==UnitGUID"pet") or (sourceFlags==gflags)then
 								icon=PET_ATTACK_TEXTURE
 							else
-							--	icon=GetSpellTexture(1, BOOKTYPE_SPELL)
-							--	_,_,icon=GetSpellInfo(6603)
 								icon=GetSpellTexture(6603)
 							end
 							queueMsg=" \124T"..icon..":"..ct.iconsize..":"..ct.iconsize..":0:0:64:64:5:59:5:59\124t"
@@ -1395,7 +1412,6 @@ if ct.auras or ct.damage or ct.healing then
 							msg=ct.critprefix..msg..ct.critpostfix
 						end
 						if(ct.icons)then
-							--_,_,icon=GetSpellInfo(spellId)
 							icon=GetSpellTexture(spellId)
 							queueMsg=" \124T"..icon..":"..ct.iconsize..":"..ct.iconsize..":0:0:64:64:5:59:5:59\124t"
 						end
@@ -1424,7 +1440,6 @@ if ct.auras or ct.damage or ct.healing then
 						end
 		
 						if(ct.icons)then
-						--	_,_,icon=GetSpellInfo(spellId)
 							icon=GetSpellTexture(spellId)
 						end
 						if(ct.damagecolor)then
@@ -1451,10 +1466,6 @@ if ct.auras or ct.damage or ct.healing then
 							SQ[spellId]["count"]=SQ[spellId]["count"]+1
 							if SQ[spellId]["count"]==1 then
 								SQ[spellId]["utime"]=time()
-							--	SQ[spellId]["utime"]=timestamp  -- cant use now, cause log timestamps differ from time() return value by 2+ seconds (CL is in the future)
-							--	print("timestamp: "..timestamp)
-							--	print("time():"..time())
-							--	print(format(TEXT_MODE_A_STRING_TIMESTAMP, date(TEXT_MODE_A_STRING_TIMESTAMP, timestamp), "finalString"))
 							end
 							SQ[spellId]["locked"]=false
 							return
@@ -1468,8 +1479,6 @@ if ct.auras or ct.damage or ct.healing then
 						if(sourceGUID==UnitGUID"pet") or (sourceFlags==gflags)then
 							icon=PET_ATTACK_TEXTURE
 						else
-						--	icon=GetSpellTexture(1, BOOKTYPE_SPELL)
-						--	_,_,icon=GetSpellInfo(6603)
 							icon=GetSpellTexture(6603)
 						end
 						missType=missType.." \124T"..icon..":"..ct.iconsize..":"..ct.iconsize..":0:0:64:64:5:59:5:59\124t"
@@ -1480,7 +1489,6 @@ if ct.auras or ct.damage or ct.healing then
 				elseif(eventType=="SPELL_MISSED")or(eventType=="RANGE_MISSED")then
 					local spellId,_,_,missType,_ = select(12,...)
 					if(ct.icons)then
-					--	_,_,icon=GetSpellInfo(spellId)
 						icon=GetSpellTexture(spellId)
 						missType=missType.." \124T"..icon..":"..ct.iconsize..":"..ct.iconsize..":0:0:64:64:5:59:5:59\124t"
 					end 
@@ -1549,7 +1557,6 @@ if ct.auras or ct.damage or ct.healing then
 								color={.1,.65,.1}
 							end 
 							if(ct.icons)then
-							--	_,_,icon=GetSpellInfo(spellId)
 								icon=GetSpellTexture(spellId)
 							else
 								msg=""
