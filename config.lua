@@ -24,9 +24,27 @@ ns.config={
 	["lowhealththreshold"] = 0.35, --set the percentage threshold for low health
 	
 -- appearence
-	["font"] = "Interface\\Addons\\xCT\\HOOGE.TTF",	-- "Fonts\\ARIALN.ttf" is default WoW font.
-	["fontsize"] = 16,
-	["fontstyle"] = "OUTLINE",	-- valid options are "OUTLINE", "MONOCHROME", "THICKOUTLINE", "OUTLINE,MONOCHROME", "THICKOUTLINE,MONOCHROME"
+	--font
+	-- "Fonts\\ARIALN.ttf" is default WoW font.
+	["font_1"] = "Interface\\Addons\\xCT\\HOOGE.TTF",	-- incoming damage justify
+	["font_2"] = "Interface\\Addons\\xCT\\HOOGE.TTF",	-- incoming healing justify
+	["font_3"] = "Interface\\Addons\\xCT\\HOOGE.TTF",	-- various messages justify (mana, rage, auras, etc)
+	["font_4"] = "Interface\\Addons\\xCT\\HOOGE.TTF",	-- boss alerts and or emotes
+	["font_5"] = "Interface\\Addons\\xCT\\HOOGE.TTF",	-- outgoing damage/healing justify
+	--font size
+	["fontsize_1"] = 16,	-- incoming damage justify
+	["fontsize_2"] = 16,	-- incoming healing justify
+	["fontsize_3"] = 16,	-- various messages justify (mana, rage, auras, etc)
+	["fontsize_4"] = 17,	-- boss alerts and or emotes
+	["fontsize_5"] = 16,	-- outgoing damage/healing justify
+	--font style
+	-- valid options are "OUTLINE", "MONOCHROME", "THICKOUTLINE", "OUTLINE,MONOCHROME", "THICKOUTLINE,MONOCHROME"
+	["fontstyle_1"] = "OUTLINE",	-- incoming damage justify
+	["fontstyle_2"] = "OUTLINE",	-- incoming healing justify
+	["fontstyle_3"] = "OUTLINE",	-- various messages justify (mana, rage, auras, etc)
+	["fontstyle_4"] = "OUTLINE",	-- boss alerts and or emotes
+	["fontstyle_5"] = "OUTLINE",	-- outgoing damage/healing justify
+	--damage font
 	["damagefont"] = "Interface\\Addons\\xCT\\HOOGE.TTF",	 -- "Fonts\\FRIZQT__.ttf" is default WoW damage font
 	--["damagefontsize"] = "auto",	-- size of xCT damage font. use "auto" to set it automatically depending on icon size, or use own value, 16 for example. if it's set to number value icons will change size.
 	["damagefontsize"] = 16,	-- size of xCT damage font. use "auto" to set it automatically depending on icon size, or use own value, 16 for example. if it's set to number value icons will change size.
@@ -53,4 +71,6 @@ ns.config={
 	["interrupt"] = true,		-- tells you about your interrupts (works only with ["damage"] = true,)
 	["eventspam"] = true,		-- enable spam protection on the event frame that has various messages like mana, rage, auras, runes, reputation etc..
 	["eventspamtime"] = 3,		-- time in seconds that event spam messages will be merged, 3 is good 1 is minimum
+	["showguildrep"] = false,		-- toggle if you want to see guild rep or not
+	["moreauras"] = true,		-- toggle if you want to process more auras (buffs/debuffs) then that available to the standard combat text
 }
