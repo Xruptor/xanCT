@@ -491,32 +491,31 @@ if(event=="COMBAT_TEXT_UPDATE")then
 	elseif subevent=="SPELL_DAMAGE_CRIT"then
 		xCT1:AddMessage(ct.critprefix.."-"..arg2..ct.critpostfix,1,.3,.5)
 
-	/*
-	elseif subevent=="HEAL"then
-		if(arg3>=ct.healtreshold)then
-			if(arg2)then
-				if(COMBAT_TEXT_SHOW_FRIENDLY_NAMES=="1")then
-					--xCT2:AddMessage("|cFF2AC85E"..arg2:match("^([^-]+)").."|r  +"..arg3,.1,.75,.1)
-				else
-					--xCT2:AddMessage("+"..arg3,.1,.75,.1)
-				end
-			end
-		end
-	elseif subevent=="HEAL_CRIT"then
-		if(arg3>=ct.healtreshold)then
-			if(arg2)then
-				if(COMBAT_TEXT_SHOW_FRIENDLY_NAMES=="1")then
-					--xCT2:AddMessage("|cFF2AC85E"..arg2:match("^([^-]+)").."|r  +"..arg3,.1,1,.1)
-				else
-					--xCT2:AddMessage("+"..arg3,.1,1,.1)
-				end
-			end
-		end
-	elseif subevent=="PERIODIC_HEAL"then
-		if(arg3>=ct.healtreshold)then
-			--xCT2:AddMessage("+"..arg3,.1,.5,.1)
-		end
-	*/
+
+	-- elseif subevent=="HEAL"then
+		-- if(arg3>=ct.healtreshold)then
+			-- if(arg2)then
+				-- if(COMBAT_TEXT_SHOW_FRIENDLY_NAMES=="1")then
+					-- xCT2:AddMessage("|cFF2AC85E"..arg2:match("^([^-]+)").."|r  +"..arg3,.1,.75,.1)
+				-- else
+					-- xCT2:AddMessage("+"..arg3,.1,.75,.1)
+				-- end
+			-- end
+		-- end
+	-- elseif subevent=="HEAL_CRIT"then
+		-- if(arg3>=ct.healtreshold)then
+			-- if(arg2)then
+				-- if(COMBAT_TEXT_SHOW_FRIENDLY_NAMES=="1")then
+					-- xCT2:AddMessage("|cFF2AC85E"..arg2:match("^([^-]+)").."|r  +"..arg3,.1,1,.1)
+				-- else
+					-- xCT2:AddMessage("+"..arg3,.1,1,.1)
+				-- end
+			-- end
+		-- end
+	-- elseif subevent=="PERIODIC_HEAL"then
+		-- if(arg3>=ct.healtreshold)then
+			-- xCT2:AddMessage("+"..arg3,.1,.5,.1)
+		-- end
 	
 	elseif subevent=="SPELL_CAST"then
 		--xCT3:AddMessage(arg2, 1, .82, 0)
@@ -1672,7 +1671,7 @@ if ct.auras or ct.damage or ct.healing then
 		end
 		
 		--HEALING
-		if ct.healing then
+		if ct.healingincoming then
 			--do incoming healing for the xCT2 frame (only do the player.. who cares about the pet, we have to do it this way in order to filter out certain heals
 			--we don't want to see.  Sadly the default blizzard combat text doesn't give spellid
 			if (destGUID==ct.pguid) then
@@ -1711,7 +1710,9 @@ if ct.auras or ct.damage or ct.healing then
 				
 				end
 			end
+		end
 		
+		if ct.healing then
 			--both incoming and outgoing heals to the external icon frame xCT5
 			if(sourceGUID==ct.pguid)or(sourceFlags==gflags)then
 				if(eventType=='SPELL_HEAL')or(eventType=='SPELL_PERIODIC_HEAL'and ct.showhots)then

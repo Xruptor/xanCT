@@ -8,6 +8,7 @@ ns.config={
 	["damagestyle"] = false,		-- change default damage/healing font above mobs/player heads. you need to restart WoW to see changes! has no effect if blizzheadnumbers = false
 -- xCT outgoing damage/healing options
 	["damage"] = true,		-- show outgoing damage in it's own frame
+	["healingincoming"] = true,	-- show incoming heals to the player in the healing frame
 	["healing"] = true,		-- show outgoing healing in it's own frame
 	["auras"] = true,		-- process auras, make sure to enable it as well in the blizzard combat text panel
 	["showhots"] = true,		-- show periodic healing effects in xCT healing frame.
