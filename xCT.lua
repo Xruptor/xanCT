@@ -20,17 +20,27 @@ end
 ---------------------------------------------------------------------------------
 if(ct.mergeaoespam)then
 	ct.aoespam={}
+	ct.spellFilter={}
 	-- See class-specific config for merged spells.
 end
 ---------------------------------------------------------------------------------
+
+if(ct.healing or ct.mergeaoespam)then
+	--store a temp list of spam names as we find the skills, just in case to capture those
+	--spellid's we may have missed ;) Not only that but we can link all children spells with the same name to the same darn spellid as the parent spell
+	ct.spamName={}
+end
+
+--filter out specific spells
 ct.spellFilter={}
-	
+
 -- class config, overrides general
 if ct.myclass=="WARLOCK" then
 	if(ct.mergeaoespam)then
 		ct.aoespam[27243]=true		-- Seed of Corruption (DoT)
 		ct.aoespam[27285]=true		-- Seed of Corruption (Explosion)
 		ct.aoespam[87385]=true		-- Seed of Corruption (Explosion Soulburned)
+		ct.aoespam[132566]=true		-- Seed of Corruption (MOP)
 		ct.aoespam[172]=true		-- Corruption
 		ct.aoespam[87389]=true		-- Corruption (Soulburn: Seed of Corruption)
 		ct.aoespam[30108]=true		-- Unstable Affliction
@@ -46,6 +56,12 @@ if ct.myclass=="WARLOCK" then
 		ct.aoespam[30213]=true		-- Legion Strike (Felguard)
 		ct.aoespam[89753]=true		-- Felstorm (Felguard)
 		ct.aoespam[20153]=true		-- Immolation (Infrenal)
+		--MOP
+		ct.aoespam[103103]=true		-- Malefic Grasp (MOP)
+		ct.aoespam[131740]=true		-- Corruption (MOP)
+		ct.aoespam[131737]=true		-- Agony (MOP)
+		ct.aoespam[131736]=true		-- Unstable Affliction (MOP)
+		ct.aoespam[114790]=true		-- Seed of Corruption (MOP)
 	end
 	if(ct.healing)then
 		ct.healfilter[28176] = true -- Fel Armor
@@ -55,6 +71,8 @@ if ct.myclass=="WARLOCK" then
 		ct.healfilter[89653]=true	-- Drain Life
 		ct.healfilter[79268]=true	-- Soul Harvest
 		ct.healfilter[30294]=true	-- Soul Leech
+		ct.healfilter[108366]=true	-- Soul Leech (MOP)
+		ct.healfilter[108503]=true	-- Grimoire of Sacrifice (MOP)		
 	end
 elseif ct.myclass=="DRUID"then
 	if(ct.mergeaoespam)then
@@ -473,13 +491,14 @@ if(event=="COMBAT_TEXT_UPDATE")then
 	elseif subevent=="SPELL_DAMAGE_CRIT"then
 		xCT1:AddMessage(ct.critprefix.."-"..arg2..ct.critpostfix,1,.3,.5)
 
+	/*
 	elseif subevent=="HEAL"then
 		if(arg3>=ct.healtreshold)then
 			if(arg2)then
 				if(COMBAT_TEXT_SHOW_FRIENDLY_NAMES=="1")then
-					xCT2:AddMessage("|cFF2AC85E"..arg2:match("^([^-]+)").."|r  +"..arg3,.1,.75,.1)
+					--xCT2:AddMessage("|cFF2AC85E"..arg2:match("^([^-]+)").."|r  +"..arg3,.1,.75,.1)
 				else
-					xCT2:AddMessage("+"..arg3,.1,.75,.1)
+					--xCT2:AddMessage("+"..arg3,.1,.75,.1)
 				end
 			end
 		end
@@ -487,17 +506,18 @@ if(event=="COMBAT_TEXT_UPDATE")then
 		if(arg3>=ct.healtreshold)then
 			if(arg2)then
 				if(COMBAT_TEXT_SHOW_FRIENDLY_NAMES=="1")then
-					xCT2:AddMessage("|cFF2AC85E"..arg2:match("^([^-]+)").."|r  +"..arg3,.1,1,.1)
+					--xCT2:AddMessage("|cFF2AC85E"..arg2:match("^([^-]+)").."|r  +"..arg3,.1,1,.1)
 				else
-					xCT2:AddMessage("+"..arg3,.1,1,.1)
+					--xCT2:AddMessage("+"..arg3,.1,1,.1)
 				end
 			end
 		end
 	elseif subevent=="PERIODIC_HEAL"then
 		if(arg3>=ct.healtreshold)then
-			xCT2:AddMessage("+"..arg3,.1,.5,.1)
+			--xCT2:AddMessage("+"..arg3,.1,.5,.1)
 		end
-
+	*/
+	
 	elseif subevent=="SPELL_CAST"then
 		--xCT3:AddMessage(arg2, 1, .82, 0)
 		xCT3:AddMessage(arg2, 1, .46, 0.10)
@@ -603,21 +623,37 @@ if(event=="COMBAT_TEXT_UPDATE")then
 
 	elseif subevent=="ENERGIZE"and(COMBAT_TEXT_SHOW_ENERGIZE=="1")then
 		if  tonumber(arg2)>0 then
-			if(arg3 and arg3=="MANA" or arg3=="RAGE" or arg3=="FOCUS" or arg3=="ENERGY" or arg3=="RUNIC_POWER" or arg3=="SOUL_SHARDS" or arg3=="HOLY_POWER")then
+			if(arg3 and arg3=="MANA" or arg3=="RAGE" or arg3=="FOCUS" or arg3=="ENERGY" or arg3=="RUNIC_POWER" or arg3=="SOUL_SHARDS" or arg3=="HOLY_POWER" or arg3=="LIGHT_FORCE")then
 				pushEventFrame("+"..arg2.."  ".._G[arg3], _G[arg3], arg2, "+%2s  %1s", PowerBarColor[arg3].r, PowerBarColor[arg3].g, PowerBarColor[arg3].b, true)
+			end
+		end
+		if ( arg3 == "ECLIPSE" ) then
+			if ( tonumber(arg2) < 0 ) then
+				pushEventFrame("+"..abs(tonumber(arg2)).."  "..BALANCE_NEGATIVE_ENERGY, BALANCE_NEGATIVE_ENERGY, abs(tonumber(arg2)), "+%2s  %1s", PowerBarColor[arg3].negative.r, PowerBarColor[arg3].negative.g, PowerBarColor[arg3].negative.b, true)
+			else
+				pushEventFrame(arg2.."  "..BALANCE_POSITIVE_ENERGY, BALANCE_POSITIVE_ENERGY, arg2, "%2s  %1s", PowerBarColor[arg3].positive.r, PowerBarColor[arg3].positive.g, PowerBarColor[arg3].positive.b, true)
 			end
 		end
 
 	elseif subevent=="PERIODIC_ENERGIZE"and(COMBAT_TEXT_SHOW_PERIODIC_ENERGIZE=="1")then
 		if  tonumber(arg2)>0 then
-			if(arg3 and arg3=="MANA" or arg3=="RAGE" or arg3=="FOCUS" or arg3=="ENERGY" or arg3=="RUNIC_POWER" or arg3=="SOUL_SHARDS" or arg3=="HOLY_POWER")then
+			if(arg3 and arg3=="MANA" or arg3=="RAGE" or arg3=="FOCUS" or arg3=="ENERGY" or arg3=="RUNIC_POWER" or arg3=="SOUL_SHARDS" or arg3=="HOLY_POWER" or arg3=="LIGHT_FORCE")then
 				pushEventFrame("+"..arg2.." ".._G[arg3], _G[arg3], arg2, "+%2s  %1s", PowerBarColor[arg3].r, PowerBarColor[arg3].g, PowerBarColor[arg3].b, true)
 			end
 		end
+		if ( arg3 == "ECLIPSE" ) then
+			if ( tonumber(arg2) < 0 ) then
+				pushEventFrame("+"..abs(tonumber(arg2)).."  "..BALANCE_NEGATIVE_ENERGY, BALANCE_NEGATIVE_ENERGY, abs(tonumber(arg2)), "+%2s  %1s", PowerBarColor[arg3].negative.r, PowerBarColor[arg3].negative.g, PowerBarColor[arg3].negative.b, true)
+			else
+				pushEventFrame(arg2.."  "..BALANCE_POSITIVE_ENERGY, BALANCE_POSITIVE_ENERGY, arg2, "%2s  %1s", PowerBarColor[arg3].positive.r, PowerBarColor[arg3].positive.g, PowerBarColor[arg3].positive.b, true)
+			end
+		end
+
 	-- elseif subevent=="SPELL_AURA_START"and(COMBAT_TEXT_SHOW_AURAS=="1")then
 		--xCT3:AddMessage("+"..arg2, 1,.5,.5)
 	-- elseif subevent=="SPELL_AURA_END"and(COMBAT_TEXT_SHOW_AURAS=="1")then
 		--xCT3:AddMessage("-"..arg2, .5,.5,.5)
+		
 	elseif subevent=="SPELL_AURA_START_HARMFUL"and(COMBAT_TEXT_SHOW_AURAS=="1")and(ct.auras)then
 		if arg2 == lastAura then return end
 		xCT3:AddMessage("+"..arg2, 1, .1, .1)
@@ -1423,25 +1459,25 @@ if ct.auras or ct.damage or ct.healing then
 				if (destGUID==ct.pguid) or (destGUID==UnitGUID("pet")) then
 					if(eventType=="SPELL_AURA_APPLIED" and ct.moreauras) then
 						local spellId,spellName,spellSchool,amount=select(12,...)
+						if not spellId then return end
 						local name, rank, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, shouldConsolidate = UnitAura("player",spellName)
 						--don't show auras with no durations
 						if name and duration and duration <=0 then return end
 						if ct.spellFilter[spellId] then return end
+						if reactiveSpell[spellName] then return end
 						lastAura = spellName
-						--print(spellId)
-						if not reactiveSpell[spellName] then
-							--depending on the return amount can be auraType
-							if amount=="DEBUFF" then
-								pushEventFrame("+"..spellName, spellName, nil, "+%s", 1, .1, .1, nil, 0)
-							else
-								pushEventFrame("+"..spellName, spellName, nil, "+%s", 0.39, 0.50, 0.98, nil, 0)
-							end
-						end
-					elseif (eventType=="ENCHANT_APPLIED")then
-						local spellName=select(12,...)
-						if not reactiveSpell[spellName] then
+						--depending on the return amount can be auraType
+						if amount=="DEBUFF" then
+							pushEventFrame("+"..spellName, spellName, nil, "+%s", 1, .1, .1, nil, 0)
+						else
 							pushEventFrame("+"..spellName, spellName, nil, "+%s", 0.39, 0.50, 0.98, nil, 0)
 						end
+						return
+					elseif (eventType=="ENCHANT_APPLIED")then
+						local spellName=select(12,...)
+						if reactiveSpell[spellName] then return end
+						pushEventFrame("+"..spellName, spellName, nil, "+%s", 0.39, 0.50, 0.98, nil, 0)
+						return
 					end
 				end
 			end
@@ -1452,6 +1488,7 @@ if ct.auras or ct.damage or ct.healing then
 			if (sourceGUID==ct.pguid and destGUID~=ct.pguid)or(sourceGUID==UnitGUID("pet") and ct.petdamage)or(sourceFlags==gflags)then
 				if(eventType=="SWING_DAMAGE")then
 					local amount,_,_,_,_,_,critical=select(12,...)
+					if not amount then return end
 					if(amount>=ct.treshold)then
 						local rawamount=amount
 						local queueMsg = ""
@@ -1482,8 +1519,10 @@ if ct.auras or ct.damage or ct.healing then
 						msg=msg..queueMsg
 						xCT5:AddMessage(msg)
 					end
+					return
 				elseif(eventType=="RANGE_DAMAGE")then
 					local spellId,_,_,amount,_,_,_,_,_,critical=select(12,...)
+					if not spellId then return end
 					if(amount>=ct.treshold)then
 						local rawamount=amount
 						local queueMsg = ""
@@ -1510,9 +1549,10 @@ if ct.auras or ct.damage or ct.healing then
 						msg=msg..queueMsg						
 						xCT5:AddMessage(msg)
 					end
-		
+					return
 				elseif(eventType=="SPELL_DAMAGE")or(eventType=="SPELL_PERIODIC_DAMAGE" and ct.dotdamage)then
-					local spellId,_,spellSchool,amount,_,_,_,_,_,critical=select(12,...)
+					local spellId,spellName,spellSchool,amount,_,_,_,_,_,critical=select(12,...)
+					if not spellId then return end
 					if(amount>=ct.treshold)then
 						local color={}
 						local rawamount=amount
@@ -1539,23 +1579,33 @@ if ct.auras or ct.damage or ct.healing then
 						else
 							msg=""
 						end
-						if ct.mergeaoespam and ct.aoespam[spellId] then
-							SQ[spellId]["locked"]=true
-							SQ[spellId]["queue"]=ct.SpamQueue(spellId, rawamount)
-							SQ[spellId]["msg"]=msg
-							SQ[spellId]["color"]=color
-							SQ[spellId]["count"]=SQ[spellId]["count"]+1
-							if SQ[spellId]["count"]==1 then
-								SQ[spellId]["utime"]=time()
+						--if we have this spellname already stored use that spellid rather then the one passed
+						--we do this to condense all the spells with the same name but different spellid's, example Corruption
+						local spellTmp = spellId
+						if ct.spamName[spellName] then
+							spellTmp = ct.spamName[spellName]
+						elseif ct.aoespam[spellId] then
+							if not ct.spamName[spellName] then ct.spamName[spellName]=spellId end
+						end
+
+						if ct.mergeaoespam and ct.aoespam[spellTmp] then
+							SQ[spellTmp]["locked"]=true
+							SQ[spellTmp]["queue"]=ct.SpamQueue(spellTmp, rawamount)
+							SQ[spellTmp]["msg"]=msg
+							SQ[spellTmp]["color"]=color
+							SQ[spellTmp]["count"]=SQ[spellTmp]["count"]+1
+							if SQ[spellTmp]["count"]==1 then
+								SQ[spellTmp]["utime"]=time()
 							end
-							SQ[spellId]["locked"]=false
+							SQ[spellTmp]["locked"]=false
 							return
 						end
 						xCT5:AddMessage(amount..""..msg,unpack(color))
 					end
-		
+					return
 				elseif(eventType=="SWING_MISSED")then
 					local missType,_=select(12,...)
+					if not missType then return end
 					if(ct.icons)then
 						if(sourceGUID==UnitGUID("pet")) or (sourceFlags==gflags)then
 							icon=PET_ATTACK_TEXTURE
@@ -1566,17 +1616,19 @@ if ct.auras or ct.damage or ct.healing then
 					end
 		
 					xCT5:AddMessage(missType)
-		
+					return
 				elseif(eventType=="SPELL_MISSED")or(eventType=="RANGE_MISSED")then
 					local spellId,_,_,missType,_ = select(12,...)
+					if not spellId then return end
 					if(ct.icons)then
 						icon=GetSpellTexture(spellId)
 						missType=missType.." \124T"..icon..":"..ct.iconsize..":"..ct.iconsize..":0:0:64:64:5:59:5:59\124t"
 					end 
 					xCT5:AddMessage(missType)
-		
+					return
 				elseif(eventType=="SPELL_DISPEL")and ct.dispel then
 					local target,_, _, id, effect, _, etype = select(12,...)
+					if not id then return end
 					local color
 					if(ct.icons)then
 						icon=GetSpellTexture(id)
@@ -1594,10 +1646,11 @@ if ct.auras or ct.damage or ct.healing then
 						color={1,0,.5}
 					end
 					xCT3:AddMessage(ACTION_SPELL_DISPEL..": "..effect..msg, unpack(color))
-
+					return
 				elseif(eventType=="SPELL_INTERRUPT")and ct.interrupt then
 					local target,_, _, id, effect = select(12,...)
 					local color={1,.5,0}
+					if not id then return end
 					if(ct.icons)then
 						icon=GetSpellTexture(id)
 					end
@@ -1614,56 +1667,105 @@ if ct.auras or ct.damage or ct.healing then
 					local tname=select(9,...)
 					pushEventFrame(ACTION_PARTY_KILL..": "..tname, ACTION_PARTY_KILL, nil, nil, .2, 1, .2)
 				end
-				
+				return
 			end
 		end
 		
 		--HEALING
 		if ct.healing then
-			if(sourceGUID==ct.pguid)or(sourceFlags==gflags)then
-				if(eventType=='SPELL_HEAL')or(eventType=='SPELL_PERIODIC_HEAL'and ct.showhots)then
-					if(ct.healing)then
-						local spellId,spellName,spellSchool,amount,overhealing,absorbed,critical = select(12,...)
-						if(ct.healfilter[spellId]) then
-							return
-						end
+			--do incoming healing for the xCT2 frame (only do the player.. who cares about the pet, we have to do it this way in order to filter out certain heals
+			--we don't want to see.  Sadly the default blizzard combat text doesn't give spellid
+			if (destGUID==ct.pguid) then
+				if(eventType=='SPELL_HEAL' or eventType=='SPELL_PERIODIC_HEAL')then
+					--ct.mergehealspam
+					local spellId,spellName,spellSchool,amount,overhealing,absorbed,critical = select(12,...)
+					if not spellId then return end
+					
+					if(ct.healfilter[spellId]) then
+						return
+					end
+					
+					if (critical) then
 						if(amount>=ct.healtreshold)then
-							local color={}
-							local rawamount=amount
-							if (critical) then 
-								amount=ct.critprefix..amount..ct.critpostfix
-								color={.1,1,.1}
+							if(COMBAT_TEXT_SHOW_FRIENDLY_NAMES=="1")then
+								xCT2:AddMessage("|cFF2AC85E"..sourceName:match("^([^-]+)").."|r  +"..amount,.1,1,.1)
 							else
-								color={.1,.65,.1}
-							end 
-							if(ct.icons)then
-								icon=GetSpellTexture(spellId)
-							else
-								msg=""
+								xCT2:AddMessage("+"..amount,.1,1,.1)
 							end
-							
-							if (icon) then 
-								msg=' \124T'..icon..':'..ct.iconsize..':'..ct.iconsize..':0:0:64:64:5:59:5:59\124t'
-							elseif(ct.icons)then
-								msg=" \124T"..ct.blank..":"..ct.iconsize..":"..ct.iconsize..":0:0:64:64:5:59:5:59\124t"
-							end
-							
-							if ct.mergeaoespam and ct.aoespam[spellId] then
-								SQ[spellId]["locked"]=true
-								SQ[spellId]["queue"]=ct.SpamQueue(spellId, rawamount)
-								SQ[spellId]["msg"]=msg
-								SQ[spellId]["color"]=color
-								SQ[spellId]["count"]=SQ[spellId]["count"]+1
-								if SQ[spellId]["count"]==1 then
-									SQ[spellId]["utime"]=time()
+						end
+					else
+						if (eventType=='SPELL_HEAL') then
+							if(amount>=ct.healtreshold)then
+								if(COMBAT_TEXT_SHOW_FRIENDLY_NAMES=="1")then
+									xCT2:AddMessage("|cFF2AC85E"..sourceName:match("^([^-]+)").."|r  +"..amount,.1,.75,.1)
+								else
+									xCT2:AddMessage("+"..amount,.1,.75,.1)
 								end
-								SQ[spellId]["locked"]=false
-								return
 							end
-							if amount == nil or amount == "" then return end
-							xCT5:AddMessage(amount..""..msg,unpack(color))
+						elseif (eventType=='SPELL_PERIODIC_HEAL') then
+							if(amount>=ct.healtreshold)then
+								xCT2:AddMessage("+"..amount,.1,.5,.1)
+							end
 						end
 					end
+				
+				end
+			end
+		
+			--both incoming and outgoing heals to the external icon frame xCT5
+			if(sourceGUID==ct.pguid)or(sourceFlags==gflags)then
+				if(eventType=='SPELL_HEAL')or(eventType=='SPELL_PERIODIC_HEAL'and ct.showhots)then
+				
+					local spellId,spellName,spellSchool,amount,overhealing,absorbed,critical = select(12,...)
+					if not spellId then return end
+					
+					if(ct.healfilter[spellId]) then
+						return
+					end
+					if(amount>=ct.healtreshold)then
+						local color={}
+						local rawamount=amount
+						if (critical) then 
+							amount=ct.critprefix..amount..ct.critpostfix
+							color={.1,1,.1}
+						else
+							color={.1,.65,.1}
+						end 
+						if(ct.icons)then
+							icon=GetSpellTexture(spellId)
+						else
+							msg=""
+						end
+						
+						if (icon) then 
+							msg=' \124T'..icon..':'..ct.iconsize..':'..ct.iconsize..':0:0:64:64:5:59:5:59\124t'
+						elseif(ct.icons)then
+							msg=" \124T"..ct.blank..":"..ct.iconsize..":"..ct.iconsize..":0:0:64:64:5:59:5:59\124t"
+						end
+						
+						local spellTmp = spellId
+						if ct.spamName[spellName] then
+							spellTmp = ct.spamName[spellName]
+						elseif ct.aoespam[spellId] then
+							if not ct.spamName[spellName] then ct.spamName[spellName]=spellId end
+						end
+						
+						if ct.mergeaoespam and ct.aoespam[spellTmp] then
+							SQ[spellTmp]["locked"]=true
+							SQ[spellTmp]["queue"]=ct.SpamQueue(spellTmp, rawamount)
+							SQ[spellTmp]["msg"]=msg
+							SQ[spellTmp]["color"]=color
+							SQ[spellTmp]["count"]=SQ[spellTmp]["count"]+1
+							if SQ[spellTmp]["count"]==1 then
+								SQ[spellTmp]["utime"]=time()
+							end
+							SQ[spellTmp]["locked"]=false
+							return
+						end
+						if amount == nil or amount == "" then return end
+						xCT5:AddMessage(amount..""..msg,unpack(color))
+					end
+					return
 				end
 			end
 		end
