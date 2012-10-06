@@ -62,6 +62,14 @@ if ct.myclass=="WARLOCK" then
 		ct.aoespam[131737]=true		-- Agony (MOP)
 		ct.aoespam[131736]=true		-- Unstable Affliction (MOP)
 		ct.aoespam[114790]=true		-- Seed of Corruption (MOP)
+		
+		ct.aoespam[112092]=true		-- Shadowbolt (MOP)
+		ct.aoespam[114328]=true		-- Shadowbolt (MOP)
+		ct.aoespam[114329]=true		-- Shadowbolt (MOP)
+		ct.aoespam[115832]=true		-- Wrathstorm (MOP)
+		ct.aoespam[104318]=true		-- Firebolt (MOP)
+		ct.aoespam[47960]=true		-- Shadowflame (MOP)
+		ct.aoespam[115625]=true		-- Mortal Cleave (MOP)
 	end
 	if(ct.healing)then
 		ct.healfilter[28176] = true -- Fel Armor
