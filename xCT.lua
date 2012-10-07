@@ -178,6 +178,7 @@ elseif ct.myclass=="SHAMAN"then
 		ct.aoespam[8187] = true -- Magma Totem
 		ct.aoespam[8050] = true -- Flame Shock
 		ct.aoespam[25504] = true -- Windfury
+		ct.aoespam[403] = true -- Lightning Bolt
 	end
 elseif ct.myclass=="MAGE"then
 	if(ct.mergeaoespam)then
@@ -484,9 +485,10 @@ local lastAura
 
 local r,g,b
 -- the function, handles everything
-local function OnEvent(self,event,subevent,...)
+local function OnEvent(self,event,...)
+local subevent = ...
 if(event=="COMBAT_TEXT_UPDATE")then
-	local arg2,arg3 = ...
+	local _,arg2,arg3 = ...
 	if (SHOW_COMBAT_TEXT=="0")then
 		return
 	else
@@ -748,7 +750,7 @@ elseif event=="UNIT_COMBO_POINTS"and(COMBAT_TEXT_SHOW_COMBO_POINTS=="1")then
 	end
 
 elseif event=="RUNE_POWER_UPDATE"then
-	local arg1,arg2 = subevent,...
+	local arg1,arg2 = ...
 	local start, duration, runeReady = GetRuneCooldown(arg1)
 	if(runeReady)then
 		localruneMapping = {
@@ -780,6 +782,7 @@ elseif event=="RUNE_POWER_UPDATE"then
 	end
 
 elseif event=="UNIT_ENTERED_VEHICLE"or event=="UNIT_EXITING_VEHICLE"then
+	local arg1,arg2 = ...
 	if(arg1=="player")then
 		SetUnit()
 	end
@@ -809,47 +812,14 @@ elseif event=="PLAYER_LOGIN"then
 	COMBAT_TEXT_LOW_MANA_THRESHOLD = ct.lowhealththreshold
 	
 elseif event=="RAID_BOSS_EMOTE" or event=="RAID_BOSS_WHISPER" or event=="CHAT_MSG_RAID_WARNING" then
-  
-	local msg = subevent
+	local msg,arg2 = ...
 
 	--http://wow.go-hero.net/framexml/15595/RaidWarning.lua
 	if (event == "RAID_BOSS_EMOTE" or event == "RAID_BOSS_WHISPER") then
-		if _G["CHAT_"..event.."_GET"] then
-			local playerName, displayTime, playSound = ...
-			local body = format(_G["CHAT_"..event.."_GET"]..msg, playerName, playerName)  --No need for pflag, monsters can't be afk, dnd, or GMs.
-			local info = ChatTypeInfo[event]
-			RaidNotice_AddMessage( RaidBossEmoteFrame, body, info, displayTime )
-			if ( playSound ) then
-			  PlaySound("RaidBossEmoteWarning", "Master")
-			end
-		end
+		RaidBossEmoteFrame_OnEvent(RaidBossEmoteFrame, event, ...)
 	else
 		--CHAT_MSG_RAID_WARNING
-		local term
-		for tag in string.gmatch(msg, "%b{}") do
-			term = strlower(string.gsub(tag, "[{}]", ""))
-			if ( ICON_TAG_LIST[term] and ICON_LIST[ICON_TAG_LIST[term]] ) then
-				msg = string.gsub(msg, tag, ICON_LIST[ICON_TAG_LIST[term]] .. "0|t")
-			elseif ( GROUP_TAG_LIST[term] ) then
-				local groupIndex = GROUP_TAG_LIST[term]
-				local groupList = "["
-				for i=1, GetNumRaidMembers() do
-				  local name, rank, subgroup, level, class, classFileName = GetRaidRosterInfo(i)
-				  if ( subgroup == groupIndex ) then
-					local classColorTable = RAID_CLASS_COLORS[classFileName]
-					if ( classColorTable ) then
-					  name = string.format("\124cff%.2x%.2x%.2x%s\124r", classColorTable.r*255, classColorTable.g*255, classColorTable.b*255, name)
-					end
-					groupList = groupList..(groupList == "[" and "" or PLAYER_LIST_DELIMITER)..name
-				  end
-				end
-				groupList = groupList.."]"
-				msg = string.gsub(msg, tag, groupList)
-			end
-		end  
-
-		RaidNotice_AddMessage( RaidWarningFrame, msg, ChatTypeInfo["RAID_WARNING"] )
-		PlaySound("RaidWarning", "Master")
+		RaidWarningFrame_OnEvent(RaidWarningFrame, event, msg)
 	end
 end
 
@@ -964,15 +934,15 @@ CombatText:SetScript("OnUpdate",nil)
 --turn off boss alerts / raid warning
 RaidBossEmoteFrame:UnregisterAllEvents()
 RaidBossEmoteFrame:SetScript("OnLoad",nil)
-RaidBossEmoteFrame:SetScript("OnEvent",nil)
+--RaidBossEmoteFrame:SetScript("OnEvent",nil)
 RaidBossEmoteFrame:SetScript("OnUpdate",nil)
-CinematicFrameRaidBossEmoteFrame:UnregisterAllEvents()
-CinematicFrameRaidBossEmoteFrame:SetScript("OnLoad",nil)
-CinematicFrameRaidBossEmoteFrame:SetScript("OnEvent",nil)
-CinematicFrameRaidBossEmoteFrame:SetScript("OnUpdate",nil)
+--CinematicFrameRaidBossEmoteFrame:UnregisterAllEvents()
+--CinematicFrameRaidBossEmoteFrame:SetScript("OnLoad",nil)
+--CinematicFrameRaidBossEmoteFrame:SetScript("OnEvent",nil)
+--CinematicFrameRaidBossEmoteFrame:SetScript("OnUpdate",nil)
 RaidWarningFrame:UnregisterAllEvents()
 RaidWarningFrame:SetScript("OnLoad",nil)
-RaidWarningFrame:SetScript("OnEvent",nil)
+--RaidWarningFrame:SetScript("OnEvent",nil)
 RaidWarningFrame:SetScript("OnUpdate",nil)
 
 --redirect any custom addon messages sent to RaidNotice_AddMessage as well 
@@ -1560,6 +1530,10 @@ if ct.auras or ct.damage or ct.healing then
 				elseif(eventType=="SPELL_DAMAGE")or(eventType=="SPELL_PERIODIC_DAMAGE" and ct.dotdamage)then
 					local spellId,spellName,spellSchool,amount,_,_,_,_,_,critical=select(12,...)
 					if not spellId then return end
+					--trace spell
+					--if not ct.aoespam[spellId] or not ct.spamName[spellName] then
+					--	print(spellId, spellName)
+					--end
 					if(amount>=ct.treshold)then
 						local color={}
 						local rawamount=amount

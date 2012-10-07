@@ -30,13 +30,13 @@ ns.config={
 	["font_1"] = "Interface\\Addons\\xCT\\HOOGE.TTF",	-- incoming damage justify
 	["font_2"] = "Interface\\Addons\\xCT\\HOOGE.TTF",	-- incoming healing justify
 	["font_3"] = "Interface\\Addons\\xCT\\HOOGE.TTF",	-- various messages justify (mana, rage, auras, etc)
-	["font_4"] = "Interface\\Addons\\xCT\\HOOGE.TTF",	-- boss alerts and or emotes
+	["font_4"] = "Fonts\\ARIALN.ttf",					-- boss alerts and or emotes
 	["font_5"] = "Interface\\Addons\\xCT\\HOOGE.TTF",	-- outgoing damage/healing justify
 	--font size
 	["fontsize_1"] = 16,	-- incoming damage justify
 	["fontsize_2"] = 16,	-- incoming healing justify
 	["fontsize_3"] = 16,	-- various messages justify (mana, rage, auras, etc)
-	["fontsize_4"] = 17,	-- boss alerts and or emotes
+	["fontsize_4"] = 18,	-- boss alerts and or emotes
 	["fontsize_5"] = 16,	-- outgoing damage/healing justify
 	--font style
 	-- valid options are "OUTLINE", "MONOCHROME", "THICKOUTLINE", "OUTLINE,MONOCHROME", "THICKOUTLINE,MONOCHROME"
