@@ -760,7 +760,7 @@ elseif event=="RUNE_POWER_UPDATE"then
 			[4] = "DEATH",
 		}
 		local rune=GetRuneType(arg1);
-		local msg=_G["COMBAT_TEXT_RUNE_"..runeMapping[rune]]
+		local msg=_G["COMBAT_TEXT_RUNE_"..RUNE_MAPPING[rune]]
 		if(rune==1)then 
 			r=.75
 			g=0
@@ -936,10 +936,10 @@ RaidBossEmoteFrame:UnregisterAllEvents()
 RaidBossEmoteFrame:SetScript("OnLoad",nil)
 --RaidBossEmoteFrame:SetScript("OnEvent",nil)
 RaidBossEmoteFrame:SetScript("OnUpdate",nil)
---CinematicFrameRaidBossEmoteFrame:UnregisterAllEvents()
---CinematicFrameRaidBossEmoteFrame:SetScript("OnLoad",nil)
---CinematicFrameRaidBossEmoteFrame:SetScript("OnEvent",nil)
---CinematicFrameRaidBossEmoteFrame:SetScript("OnUpdate",nil)
+CinematicFrameRaidBossEmoteFrame:UnregisterAllEvents()
+CinematicFrameRaidBossEmoteFrame:SetScript("OnLoad",nil)
+CinematicFrameRaidBossEmoteFrame:SetScript("OnEvent",nil)
+CinematicFrameRaidBossEmoteFrame:SetScript("OnUpdate",nil)
 RaidWarningFrame:UnregisterAllEvents()
 RaidWarningFrame:SetScript("OnLoad",nil)
 --RaidWarningFrame:SetScript("OnEvent",nil)
@@ -1685,7 +1685,11 @@ if ct.auras or ct.damage or ct.healing then
 							end
 						elseif (eventType=='SPELL_PERIODIC_HEAL') then
 							if(amount>=ct.healtreshold)then
-								xCT2:AddMessage("+"..amount,.1,.5,.1)
+								if(COMBAT_TEXT_SHOW_FRIENDLY_NAMES=="1")then
+									xCT2:AddMessage("|cFF2AC85E"..sourceName:match("^([^-]+)").."|r  +"..amount,.1,.75,.1)
+								else
+									xCT2:AddMessage("+"..amount,.1,.75,.1)
+								end
 							end
 						end
 					end
