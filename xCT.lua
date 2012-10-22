@@ -452,18 +452,18 @@ local function ScrollDirection()
 end
 
 --function for spam prevention on the event frame
-local function pushEventFrame(msg, name, amount, style, r, g, b, insertBefore, bypass_eventspamtime)
+local function pushEventFrame(frameOut, msg, name, amount, style, r, g, b, bypass_eventspamtime)
 	if (ct.eventspam and msg and name) then
 		if reactiveSpell[name] then return end --don't process reactive skills let the regular combat_text do that
 		if not EQ[name] then EQ[name] = {} end
 		EQ[name]["locked"]=true
 		if not EQ[name]["queue"] then EQ[name]["queue"] = 0 end
+		--add the data
+		EQ[name]["msg"]=msg
 		if tonumber(amount) and tonumber(amount) > 0 then
 			EQ[name]["queue"] = EQ[name]["queue"] + tonumber(amount)
 		end
-		EQ[name]["msg"]=msg
 		EQ[name]["style"]=style
-		if insertBefore then EQ[name]["insertBefore"] = true end
 		if bypass_eventspamtime then EQ[name]["bypass_eventspamtime"] = bypass_eventspamtime end
 		EQ[name]["color"]={r, g, b}
 		if not EQ[name]["count"] or EQ[name]["count"] == 0 then
@@ -473,8 +473,9 @@ local function pushEventFrame(msg, name, amount, style, r, g, b, insertBefore, b
 			EQ[name]["count"] = EQ[name]["count"] + 1
 		end
 		EQ[name]["locked"]=false
+		EQ[name]["frameOut"]=frameOut
 	else
-		xCT3:AddMessage(msg, r, g, b)
+		frameOut:AddMessage(msg, r, g, b)
 	end
 end
 
@@ -536,7 +537,6 @@ if(event=="COMBAT_TEXT_UPDATE")then
 			EQ[arg2]["count"]=0
 			EQ[arg2]["queue"]=0
 			EQ[arg2]["style"]=nil
-			EQ[arg2]["insertBefore"]=nil
 			EQ[arg2]["bypass_eventspamtime"]=nil
 		end
 		
@@ -633,28 +633,28 @@ if(event=="COMBAT_TEXT_UPDATE")then
 	elseif subevent=="ENERGIZE"and(COMBAT_TEXT_SHOW_ENERGIZE=="1")then
 		if  tonumber(arg2)>0 then
 			if(arg3 and arg3=="MANA" or arg3=="RAGE" or arg3=="FOCUS" or arg3=="ENERGY" or arg3=="RUNIC_POWER" or arg3=="SOUL_SHARDS" or arg3=="HOLY_POWER" or arg3=="LIGHT_FORCE")then
-				pushEventFrame("+"..arg2.."  ".._G[arg3], _G[arg3], arg2, "+%2s  %1s", PowerBarColor[arg3].r, PowerBarColor[arg3].g, PowerBarColor[arg3].b, true)
+				pushEventFrame(xCT3, "+"..arg2.."  "..arg3, arg3, arg2, "+%2$s  %1$s", PowerBarColor[arg3].r, PowerBarColor[arg3].g, PowerBarColor[arg3].b)
 			end
 		end
 		if ( arg3 == "ECLIPSE" ) then
 			if ( tonumber(arg2) < 0 ) then
-				pushEventFrame("+"..abs(tonumber(arg2)).."  "..BALANCE_NEGATIVE_ENERGY, BALANCE_NEGATIVE_ENERGY, abs(tonumber(arg2)), "+%2s  %1s", PowerBarColor[arg3].negative.r, PowerBarColor[arg3].negative.g, PowerBarColor[arg3].negative.b, true)
+				pushEventFrame(xCT3, "+"..abs(tonumber(arg2)).."  "..BALANCE_NEGATIVE_ENERGY, BALANCE_NEGATIVE_ENERGY, abs(tonumber(arg2)), "+%2$s  %1$s", PowerBarColor[arg3].negative.r, PowerBarColor[arg3].negative.g, PowerBarColor[arg3].negative.b)
 			else
-				pushEventFrame(arg2.."  "..BALANCE_POSITIVE_ENERGY, BALANCE_POSITIVE_ENERGY, arg2, "%2s  %1s", PowerBarColor[arg3].positive.r, PowerBarColor[arg3].positive.g, PowerBarColor[arg3].positive.b, true)
+				pushEventFrame(xCT3, arg2.."  "..BALANCE_POSITIVE_ENERGY, BALANCE_POSITIVE_ENERGY, arg2, "+%2$s  %1$s", PowerBarColor[arg3].positive.r, PowerBarColor[arg3].positive.g, PowerBarColor[arg3].positive.b)
 			end
 		end
 
 	elseif subevent=="PERIODIC_ENERGIZE"and(COMBAT_TEXT_SHOW_PERIODIC_ENERGIZE=="1")then
 		if  tonumber(arg2)>0 then
 			if(arg3 and arg3=="MANA" or arg3=="RAGE" or arg3=="FOCUS" or arg3=="ENERGY" or arg3=="RUNIC_POWER" or arg3=="SOUL_SHARDS" or arg3=="HOLY_POWER" or arg3=="LIGHT_FORCE")then
-				pushEventFrame("+"..arg2.." ".._G[arg3], _G[arg3], arg2, "+%2s  %1s", PowerBarColor[arg3].r, PowerBarColor[arg3].g, PowerBarColor[arg3].b, true)
+				pushEventFrame(xCT3, "+"..arg2.." "..arg3, arg3, arg2, "+%2$s  %1$s", PowerBarColor[arg3].r, PowerBarColor[arg3].g, PowerBarColor[arg3].b)
 			end
 		end
 		if ( arg3 == "ECLIPSE" ) then
 			if ( tonumber(arg2) < 0 ) then
-				pushEventFrame("+"..abs(tonumber(arg2)).."  "..BALANCE_NEGATIVE_ENERGY, BALANCE_NEGATIVE_ENERGY, abs(tonumber(arg2)), "+%2s  %1s", PowerBarColor[arg3].negative.r, PowerBarColor[arg3].negative.g, PowerBarColor[arg3].negative.b, true)
+				pushEventFrame(xCT3, "+"..abs(tonumber(arg2)).."  "..BALANCE_NEGATIVE_ENERGY, BALANCE_NEGATIVE_ENERGY, abs(tonumber(arg2)), "+%2$s  %1$s", PowerBarColor[arg3].negative.r, PowerBarColor[arg3].negative.g, PowerBarColor[arg3].negative.b)
 			else
-				pushEventFrame(arg2.."  "..BALANCE_POSITIVE_ENERGY, BALANCE_POSITIVE_ENERGY, arg2, "%2s  %1s", PowerBarColor[arg3].positive.r, PowerBarColor[arg3].positive.g, PowerBarColor[arg3].positive.b, true)
+				pushEventFrame(xCT3, arg2.."  "..BALANCE_POSITIVE_ENERGY, BALANCE_POSITIVE_ENERGY, arg2, "+%2$s  %1$s", PowerBarColor[arg3].positive.r, PowerBarColor[arg3].positive.g, PowerBarColor[arg3].positive.b)
 			end
 		end
 
@@ -675,7 +675,7 @@ if(event=="COMBAT_TEXT_UPDATE")then
 		if(arg2 and abs(arg2)>1) then
 			arg2=floor(arg2)
 			if (arg2>0)then
-				pushEventFrame(HONOR.."  +"..arg2, HONOR, arg2, "%1s  +%2s", .1, .1, 1)
+				pushEventFrame(xCT3, HONOR.."  +"..arg2, HONOR, arg2, "%1$s  +%2$s", .1, .1, 1)
 			end
 		end
 
@@ -683,12 +683,12 @@ if(event=="COMBAT_TEXT_UPDATE")then
 		--only show guild rep if user has turned it on
 		if strlower(arg2) == strlower(GUILD) then
 			if ct.showguildrep then
-				pushEventFrame(arg2.."  +"..arg3, arg2, arg3, "%1s  +%2s", .1, .1, 1)
+				pushEventFrame(xCT3, arg2.."  +"..arg3, arg2, arg3, "%1$s  +%2$s", .1, .1, 1)
 			end
 			return
 		end
 		
-		pushEventFrame(arg2.."  +"..arg3, arg2, arg3, "%1s  +%2s", .1, .1, 1)
+		pushEventFrame(xCT3, arg2.."  +"..arg3, arg2, arg3, "%1$s  +%2$s", .1, .1, 1)
 
 	elseif subevent=="SPELL_ACTIVE"and(COMBAT_TEXT_SHOW_REACTIVES=="1")then
 		xCT3:AddMessage(arg2, 1, .82, 0)
@@ -698,7 +698,6 @@ if(event=="COMBAT_TEXT_UPDATE")then
 			EQ[arg2]["count"]=0
 			EQ[arg2]["queue"]=0
 			EQ[arg2]["style"]=nil
-			EQ[arg2]["insertBefore"]=nil
 			EQ[arg2]["bypass_eventspamtime"]=nil
 		end
 	end
@@ -981,7 +980,7 @@ xCT:SetScript("OnEvent",OnEvent)
 -- steal external messages sent by other addons using CombatText_AddMessage
 Blizzard_CombatText_AddMessage=CombatText_AddMessage
 function CombatText_AddMessage(message,scrollFunction,r,g,b,displayType,isStaggered)
-	pushEventFrame(message, message, nil, nil, r, g, b)
+	pushEventFrame(xCT3, message, message, nil, nil, r, g, b)
 end
 
 -- force hide blizz damage/healing, if desired
@@ -1323,28 +1322,27 @@ if(ct.mergeaoespam or ct.eventspam) then
 						if EQ[k]["count"]>1 then
 							count=" |cffFFFFFF x "..EQ[k]["count"].."|r"
 						else
+							--this only happens if we pass nil to amount
 							count=""
 						end
 						if EQ[k]["queue"]>0 then
 							queue = EQ[k]["queue"]
 						else
+							--this only happens if we pass nil to amount
 							queue = ""
 						end
 						
-						if EQ[k]["style"] and EQ[k]["queue"]>0 then
-							if EQ[k]["insertBefore"] then
-								xCT3:AddMessage(string.format(EQ[k]["style"], EQ[k]["queue"], k)..count, unpack(EQ[k]["color"]))
+						if EQ[k]["frameOut"] then
+							if EQ[k]["style"] and EQ[k]["queue"]>0 then
+								EQ[k]["frameOut"]:AddMessage(string.format(EQ[k]["style"], k, EQ[k]["queue"])..count, unpack(EQ[k]["color"]))
 							else
-								xCT3:AddMessage(string.format(EQ[k]["style"], k, EQ[k]["queue"])..count, unpack(EQ[k]["color"]))
+								EQ[k]["frameOut"]:AddMessage(queue..EQ[k]["msg"]..count, unpack(EQ[k]["color"]))
 							end
-						else
-							xCT3:AddMessage(queue..EQ[k]["msg"]..count, unpack(EQ[k]["color"]))
 						end
 
 						EQ[k]["count"]=0
 						EQ[k]["queue"]=0
 						EQ[k]["style"]=nil
-						EQ[k]["insertBefore"]=nil
 						EQ[k]["bypass_eventspamtime"]=nil
 					end
 				end
@@ -1396,7 +1394,7 @@ if ct.auras or ct.damage or ct.healing then
 	end
 	
 	if(ct.icons)then
-		ct.blank="Interface\\Addons\\xCT\\blank"
+		ct.blank=GetSpellTexture(74009) or GetSpellTexture(6603)
 	end
 	
 	local eventF=function(self,event,...) 
@@ -1445,15 +1443,15 @@ if ct.auras or ct.damage or ct.healing then
 						lastAura = spellName
 						--depending on the return amount can be auraType
 						if amount=="DEBUFF" then
-							pushEventFrame("+"..spellName, spellName, nil, "+%s", 1, .1, .1, nil, 0)
+							pushEventFrame(xCT3, "+"..spellName, spellName, nil, nil, 1, .1, .1, 0)
 						else
-							pushEventFrame("+"..spellName, spellName, nil, "+%s", 0.39, 0.50, 0.98, nil, 0)
+							pushEventFrame(xCT3, "+"..spellName, spellName, nil, nil, 0.39, 0.50, 0.98, 0)
 						end
 						return
 					elseif (eventType=="ENCHANT_APPLIED")then
 						local spellName=select(12,...)
 						if reactiveSpell[spellName] then return end
-						pushEventFrame("+"..spellName, spellName, nil, "+%s", 0.39, 0.50, 0.98, nil, 0)
+						pushEventFrame(xCT3, "+"..spellName, spellName, nil, nil, 0.39, 0.50, 0.98, 0)
 						return
 					end
 				end
@@ -1646,7 +1644,7 @@ if ct.auras or ct.damage or ct.healing then
 
 				elseif(eventType=="PARTY_KILL") and ct.killingblow and destIsPlayer then
 					local tname=select(9,...)
-					pushEventFrame(ACTION_PARTY_KILL..": "..tname, ACTION_PARTY_KILL, nil, nil, .2, 1, .2)
+					pushEventFrame(xCT3, ACTION_PARTY_KILL..": "..tname, ACTION_PARTY_KILL, nil, nil, .2, 1, .2)
 				end
 				return
 			end
@@ -1675,23 +1673,20 @@ if ct.auras or ct.damage or ct.healing then
 							end
 						end
 					else
-						if (eventType=='SPELL_HEAL') then
-							if(amount>=ct.healtreshold)then
-								if(COMBAT_TEXT_SHOW_FRIENDLY_NAMES=="1")then
-									xCT2:AddMessage("|cFF2AC85E"..sourceName:match("^([^-]+)").."|r  +"..amount,.1,.75,.1)
+						if(amount>=ct.healtreshold)then
+							if(COMBAT_TEXT_SHOW_FRIENDLY_NAMES=="1")then
+								--we can only do spam checks when we have friendly names on, otherwise we have no means to compare ;)
+								--we only really want to do this with hots sooooo
+								if ct.mergeaoespam and eventType=='SPELL_PERIODIC_HEAL' then
+									pushEventFrame(xCT2, "|cFF2AC85E"..sourceName:match("^([^-]+)").."|r  +"..amount, sourceName:match("^([^-]+)"), amount, "|cFF2AC85E%1$s|r  +%2$s", .1,.75,.1)
 								else
-									xCT2:AddMessage("+"..amount,.1,.75,.1)
-								end
-							end
-						elseif (eventType=='SPELL_PERIODIC_HEAL') then
-							if(amount>=ct.healtreshold)then
-								if(COMBAT_TEXT_SHOW_FRIENDLY_NAMES=="1")then
 									xCT2:AddMessage("|cFF2AC85E"..sourceName:match("^([^-]+)").."|r  +"..amount,.1,.75,.1)
-								else
-									xCT2:AddMessage("+"..amount,.1,.75,.1)
 								end
+							else
+								xCT2:AddMessage("+"..amount,.1,.75,.1)
 							end
 						end
+						
 					end
 				
 				end
