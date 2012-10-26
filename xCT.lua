@@ -633,7 +633,7 @@ if(event=="COMBAT_TEXT_UPDATE")then
 	elseif subevent=="ENERGIZE"and(COMBAT_TEXT_SHOW_ENERGIZE=="1")then
 		if  tonumber(arg2)>0 then
 			if(arg3 and arg3=="MANA" or arg3=="RAGE" or arg3=="FOCUS" or arg3=="ENERGY" or arg3=="RUNIC_POWER" or arg3=="SOUL_SHARDS" or arg3=="HOLY_POWER" or arg3=="LIGHT_FORCE")then
-				pushEventFrame(xCT3, "+"..arg2.."  "..arg3, arg3, arg2, "+%2$s  %1$s", PowerBarColor[arg3].r, PowerBarColor[arg3].g, PowerBarColor[arg3].b)
+				pushEventFrame(xCT3, "+"..arg2.."  ".._G[arg3], _G[arg3], arg2, "+%2$s  %1$s", PowerBarColor[arg3].r, PowerBarColor[arg3].g, PowerBarColor[arg3].b)
 			end
 		end
 		if ( arg3 == "ECLIPSE" ) then
@@ -647,7 +647,7 @@ if(event=="COMBAT_TEXT_UPDATE")then
 	elseif subevent=="PERIODIC_ENERGIZE"and(COMBAT_TEXT_SHOW_PERIODIC_ENERGIZE=="1")then
 		if  tonumber(arg2)>0 then
 			if(arg3 and arg3=="MANA" or arg3=="RAGE" or arg3=="FOCUS" or arg3=="ENERGY" or arg3=="RUNIC_POWER" or arg3=="SOUL_SHARDS" or arg3=="HOLY_POWER" or arg3=="LIGHT_FORCE")then
-				pushEventFrame(xCT3, "+"..arg2.." "..arg3, arg3, arg2, "+%2$s  %1$s", PowerBarColor[arg3].r, PowerBarColor[arg3].g, PowerBarColor[arg3].b)
+				pushEventFrame(xCT3, "+"..arg2.." ".._G[arg3], _G[arg3], arg2, "+%2$s  %1$s", PowerBarColor[arg3].r, PowerBarColor[arg3].g, PowerBarColor[arg3].b)
 			end
 		end
 		if ( arg3 == "ECLIPSE" ) then
@@ -1664,10 +1664,17 @@ if ct.auras or ct.damage or ct.healing then
 						return
 					end
 					
+					local sNameF
+					if sourceName == nil then
+						sNameF = spellName
+					else
+						sNameF = sourceName:match("^([^-]+)") or spellName
+					end
+					
 					if (critical) then
 						if(amount>=ct.healtreshold)then
 							if(COMBAT_TEXT_SHOW_FRIENDLY_NAMES=="1")then
-								xCT2:AddMessage("|cFF2AC85E"..sourceName:match("^([^-]+)").."|r  +"..amount,.1,1,.1)
+								xCT2:AddMessage("|cFF2AC85E"..sNameF.."|r  +"..amount,.1,1,.1)
 							else
 								xCT2:AddMessage("+"..amount,.1,1,.1)
 							end
@@ -1678,9 +1685,9 @@ if ct.auras or ct.damage or ct.healing then
 								--we can only do spam checks when we have friendly names on, otherwise we have no means to compare ;)
 								--we only really want to do this with hots sooooo
 								if ct.mergeaoespam and eventType=='SPELL_PERIODIC_HEAL' then
-									pushEventFrame(xCT2, "|cFF2AC85E"..sourceName:match("^([^-]+)").."|r  +"..amount, sourceName:match("^([^-]+)"), amount, "|cFF2AC85E%1$s|r  +%2$s", .1,.75,.1)
+									pushEventFrame(xCT2, "|cFF2AC85E"..sNameF.."|r  +"..amount, sNameF, amount, "|cFF2AC85E%1$s|r  +%2$s", .1,.75,.1)
 								else
-									xCT2:AddMessage("|cFF2AC85E"..sourceName:match("^([^-]+)").."|r  +"..amount,.1,.75,.1)
+									xCT2:AddMessage("|cFF2AC85E"..sNameF.."|r  +"..amount,.1,.75,.1)
 								end
 							else
 								xCT2:AddMessage("+"..amount,.1,.75,.1)
