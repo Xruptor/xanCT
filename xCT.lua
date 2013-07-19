@@ -1,4 +1,6 @@
 --[[
+Special thanks to:
+Mikord for MikScrollingBattleText and the amazing warning sound files it has (Which this addon utilizes)
 
 xCT by affli @ RU-Howling Fjord
 All rights reserved.
