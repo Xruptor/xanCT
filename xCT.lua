@@ -72,6 +72,7 @@ if ct.myclass=="WARLOCK" then
 		ct.aoespam[104318]=true		-- Firebolt (MOP)
 		ct.aoespam[47960]=true		-- Shadowflame (MOP)
 		ct.aoespam[115625]=true		-- Mortal Cleave (MOP)
+		ct.aoespam[105174]=true		-- Hand of Gul'Dan (MOP)
 	end
 	if(ct.healing)then
 		ct.healfilter[28176] = true -- Fel Armor
@@ -182,6 +183,13 @@ elseif ct.myclass=="SHAMAN"then
 		ct.aoespam[25504] = true -- Windfury
 		ct.aoespam[403] = true -- Lightning Bolt
 	end
+elseif ct.myclass=="MONK"then
+	if(ct.mergeaoespam)then
+		-- Healer spells
+		ct.aoespam[115175] = true -- Soothing Mist
+		ct.aoespam[132120] = true -- Enveloping Mist
+		ct.aoespam[119611] = true -- Renewing Mist
+	end	
 elseif ct.myclass=="MAGE"then
 	if(ct.mergeaoespam)then
 		ct.aoespam[44461] = true -- Living Bomb Explosion
@@ -1648,7 +1656,6 @@ if ct.auras or ct.damage or ct.healing then
 					local tname=select(9,...)
 					pushEventFrame(xCT3, ACTION_PARTY_KILL..": "..tname, ACTION_PARTY_KILL, nil, nil, .2, 1, .2)
 				end
-				return
 			end
 		end
 		
@@ -1756,7 +1763,6 @@ if ct.auras or ct.damage or ct.healing then
 						if amount == nil or amount == "" then return end
 						xCT5:AddMessage(amount..""..msg,unpack(color))
 					end
-					return
 				end
 			end
 		end
