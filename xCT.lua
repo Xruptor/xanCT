@@ -238,6 +238,10 @@ elseif ct.myclass=="HUNTER"then
 		ct.aoespam[1978] = true -- Serpent Sting
 		ct.aoespam[13812] = true -- Explosive Trap
 		ct.aoespam[53301] = true -- Explosive Shot
+		ct.aoespam[118459] = true -- Beast Cleave
+		ct.aoespam[118455] = true -- Beast Cleave
+		ct.aoespam[120755] = true -- Glaive Toss
+		ct.aoespam[120756] = true -- Glaive Toss		
 	end
 elseif ct.myclass=="DEATHKNIGHT"then
 	if(ct.mergeaoespam)then
