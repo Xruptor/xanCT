@@ -197,6 +197,21 @@ elseif ct.myclass=="MONK"then
 		ct.aoespam[115175] = true -- Soothing Mist
 		ct.aoespam[132120] = true -- Enveloping Mist
 		ct.aoespam[119611] = true -- Renewing Mist
+		ct.aoespam[117640] = true -- Spinning Crane Kick (Healing)
+		ct.aoespam[124081] = true -- Zen Sphere
+		ct.aoespam[124101] = true -- Zen Sphere: Detonate
+		ct.aoespam[130654] = true -- Chi Burst (Heal)
+		ct.aoespam[132463] = true -- Chi Wave (Heal)
+		-- Damage Spells
+		ct.aoespam[107270] = true -- Spinning Crane Kick
+		ct.aoespam[115181] = true -- Breath of Fire
+		ct.aoespam[123725] = true -- Breath of Fire (Dot)
+		ct.aoespam[121253] = true -- Keg Smash
+		ct.aoespam[124098] = true -- Zen Sphere
+		ct.aoespam[125033] = true -- Zen Sphere: Detonate
+		ct.aoespam[118022] = true -- Dizzying Haze (Misfire Proc)
+		ct.aoespam[130651] = true -- Chi Burst
+		ct.aoespam[132467] = true -- Chi Wave
 	end	
 elseif ct.myclass=="MAGE"then
 	if(ct.mergeaoespam)then
@@ -1407,6 +1422,18 @@ if(ct.mergeaoespam or ct.eventspam) then
 	end)
 end
 
+local debugSwitchEvent = {
+	["SPELL_PERIODIC_HEAL"] = true,
+	["SPELL_HEAL"] = true,
+	["SPELL_DAMAGE"] = true,
+	["SPELL_PERIODIC_DAMAGE"] = true,
+	["SWING_DAMAGE"] = true,
+	["RANGE_DAMAGE"] = true,
+	["SWING_MISSED"] = true,
+	["SPELL_MISSED"] = true,
+	["RANGE_MISSED"] = true,
+}
+
 local unpack,select,time=unpack,select,time
 local	gflags=bit.bor(	COMBATLOG_OBJECT_AFFILIATION_MINE,
 		COMBATLOG_OBJECT_REACTION_FRIENDLY,
@@ -1436,9 +1463,11 @@ if ct.auras or ct.damage or ct.healing then
 	--	local timestamp, eventType, sourceGUID, sourceName, sourceFlags, destGUID, destName, destFlags = select(1,...)
 		local timestamp, eventType, hideCaster, sourceGUID, sourceName, sourceFlags, srcFlags2, destGUID, destName, destFlags, destFlags2 = select(1,...)
 		
-		if debugSwitch then
-			local spellId,spellName,spellSchool,amount=select(12,...)
-			Debug(eventType,'   ','SPELLID='..tostring(spellId),select(12,...))
+		if debugSwitch and debugSwitchEvent[eventType] ~= nil then
+			if (sourceGUID==ct.pguid) or (sourceFlags==gflags) then
+				local spellId,spellName,spellSchool,amount=select(12,...)
+				Debug(eventType,'   ','|cFF99CC33SPELL_ID = '..tostring(spellId)..'|r','|cFFDF2B2B'..tostring(spellName)..'|r',select(12,...))
+			end
 		end
 		
 		-- local sourceIsFriendly = bit.band(sourceFlags, COMBATLOG_OBJECT_REACTION_FRIENDLY)
