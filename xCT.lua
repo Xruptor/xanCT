@@ -13,6 +13,14 @@ local addon, ns=...
 ct=ns.config
 ct.myname, _ = UnitName("player")
 ct.myclass=select(2,UnitClass("player"))
+
+local debugSwitch = false
+
+local debugf = tekDebug and tekDebug:GetFrame("xCT")
+local function Debug(...)
+    if debugf then debugf:AddMessage(string.join(", ", tostringall(...))) end
+end
+
 ---------------------------------------------------------------------------------
 -- outgoing healing filter, hide this spammy shit, plx
 if(ct.healing)then
@@ -87,7 +95,7 @@ if ct.myclass=="WARLOCK" then
 	end
 elseif ct.myclass=="DRUID"then
 	if(ct.mergeaoespam)then
-		-- Healer spells
+		-- Healing spells
 		ct.aoespam[774] = true -- Rejuvenation (Normal)
 		ct.aoespam[64801] = true -- Rejuvenation (First tick)
 		ct.aoespam[48438] = true -- Wild Growth
@@ -95,7 +103,7 @@ elseif ct.myclass=="DRUID"then
 		ct.aoespam[33763] = true -- Lifebloom
 		ct.aoespam[44203] = true -- Tranquility
 		ct.aoespam[81269] = true -- Efflorescence
-		-- Damager spells
+		-- Damage spells
 		ct.aoespam[8921] = true -- Moonfire
 		ct.aoespam[93402] = true -- Sunfire
 		ct.aoespam[5570] = true -- Insect Swarm
@@ -113,14 +121,14 @@ elseif ct.myclass=="DRUID"then
 	end
 elseif ct.myclass=="PALADIN"then
 	if(ct.mergeaoespam)then
-		-- Healer spells
+		-- Healing spells
 		ct.aoespam[20167] = true -- Seal of Insight (Heal Effect)
 		ct.aoespam[94289] = true -- Protector of the Innocent
 		ct.aoespam[53652] = true -- Beacon of Light
 		ct.aoespam[85222] = true -- Light of Dawn
 		ct.aoespam[82327] = true -- Holy Radiance
 		ct.aoespam[86452] = true -- Holy Radiance (Hot)
-		-- Damager spells
+		-- Damage spells
 		ct.aoespam[81297] = true -- Consecration
 		ct.aoespam[2812] = true -- Holy Wrath
 		ct.aoespam[53385] = true -- Divine Storm
@@ -134,7 +142,7 @@ elseif ct.myclass=="PALADIN"then
 	end
 elseif ct.myclass=="PRIEST"then
 	if(ct.mergeaoespam)then
-		-- Healer spells
+		-- Healing spells
 		ct.aoespam[47750] = true -- Penance (Heal Effect)
 		ct.aoespam[139] = true -- Renew
 		ct.aoespam[596] = true -- Prayer of Healing
@@ -148,7 +156,7 @@ elseif ct.myclass=="PRIEST"then
 		ct.aoespam[63544] = true -- Divine Touch
 		ct.aoespam[81751] = true -- Atonement (Non-crit)
 		ct.aoespam[94472] = true -- Atonement (Crit)
-		-- Damager spells
+		-- Damage spells
 		ct.aoespam[47666] = true -- Penance (Damage Effect)
 		ct.aoespam[15237] = true -- Holy Nova (Damage Effect)
 		ct.aoespam[589] = true -- Shadow Word: Pain
@@ -166,13 +174,13 @@ elseif ct.myclass=="PRIEST"then
 	end
 elseif ct.myclass=="SHAMAN"then
 	if(ct.mergeaoespam)then
-		-- Healer spells
+		-- Healing spells
 		ct.aoespam[73921] = true -- Healing Rain
 		ct.aoespam[52042] = true -- Healing Stream Totem
 		ct.aoespam[1064] = true -- Chain Heal
 		ct.aoespam[51945] = true -- Earthliving
 		ct.aoespam[61295] = true -- Riptide (HoT and instant heal)
-		-- Damager spells
+		-- Damage spells
 		ct.aoespam[421] = true -- Chain Lightning
 		ct.aoespam[45297] = true -- Chain Lightning (Mastery proc)
 		ct.aoespam[8349] = true -- Fire Nova
@@ -185,7 +193,7 @@ elseif ct.myclass=="SHAMAN"then
 	end
 elseif ct.myclass=="MONK"then
 	if(ct.mergeaoespam)then
-		-- Healer spells
+		-- Healing spells
 		ct.aoespam[115175] = true -- Soothing Mist
 		ct.aoespam[132120] = true -- Enveloping Mist
 		ct.aoespam[119611] = true -- Renewing Mist
@@ -209,6 +217,9 @@ elseif ct.myclass=="MAGE"then
 		ct.aoespam[82739] = true -- Flame Orb
 		ct.aoespam[83619] = true -- Fire Power
 		ct.aoespam[120] = true -- Cone of Cold
+		ct.aoespam[114923] = true -- Nether Tempest
+		ct.aoespam[113092] = true -- Frost Bomb
+		ct.aoespam[44461] = true -- Living Bomb
 	end
 	if(ct.healing)then
 		ct.healfilter[91394] = true --Permafrost (Talent)
@@ -280,11 +291,11 @@ elseif ct.myclass=="ROGUE"then
 end
 --GENERIC ALWAYS ADD
 if (ct.mergeaoespam) then
-	-- Healer spells
+	-- Healing spells
 	ct.aoespam[109847]=true -- Maw of the Dragonlord LFR
 	ct.aoespam[107835]=true -- Maw of the Dragonlord NORMAL
 	ct.aoespam[109849]=true -- Maw of the Dragonlord HEROIC 
-	-- Damager spells
+	-- Damage spells
 	-- Dragon Soul - The Madness of Deathwing
 	ct.aoespam[109609] = true -- Spellweave
 	ct.aoespam[109610] = true -- Spellweave
@@ -1257,11 +1268,20 @@ SlashCmdList["XCT"]=function(input)
 				_G["xCT"..i]:SetWidth(128)
 			end
 		end
+	elseif(input=="debug")then
+		if debugSwitch then
+			debugSwitch = false
+			DEFAULT_CHAT_FRAME:AddMessage("xCT: Debugging is now [|cFF99CC33OFF|r]")
+		else
+			debugSwitch = true
+			DEFAULT_CHAT_FRAME:AddMessage("xCT: Debugging is now [|cFF99CC33ON|r] (Requires Addon tekDebug, type /tekdebug)")
+		end	
 	else
 		pr("use |cffFF0000/xct unlock|r to move and resize frames.")
 		pr("use |cffFF0000/xct lock|r to lock frames.")
 		pr("use |cffFF0000/xct test|r to toggle testmode (sample xCT output).")
 		pr("use |cffFF0000/xct reset|r to reset frame positions.")
+		pr("use |cffFF0000/xct debug|r to toggle debugging mode.  Note: requires tekDebug addon!")
 	end
 end
 
@@ -1415,7 +1435,12 @@ if ct.auras or ct.damage or ct.healing then
 		local msg,icon
 	--	local timestamp, eventType, sourceGUID, sourceName, sourceFlags, destGUID, destName, destFlags = select(1,...)
 		local timestamp, eventType, hideCaster, sourceGUID, sourceName, sourceFlags, srcFlags2, destGUID, destName, destFlags, destFlags2 = select(1,...)
-
+		
+		if debugSwitch then
+			local spellId,spellName,spellSchool,amount=select(12,...)
+			Debug(eventType,'   ','SPELLID='..tostring(spellId),select(12,...))
+		end
+		
 		-- local sourceIsFriendly = bit.band(sourceFlags, COMBATLOG_OBJECT_REACTION_FRIENDLY)
 		-- local sourceIsEnemy = bit.band(sourceFlags, COMBATLOG_OBJECT_REACTION_HOSTILE)
 		-- local destIsFriendly = bit.band(destFlags, COMBATLOG_OBJECT_REACTION_FRIENDLY)
