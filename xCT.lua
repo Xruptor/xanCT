@@ -81,6 +81,12 @@ if ct.myclass=="WARLOCK" then
 		ct.aoespam[47960]=true		-- Shadowflame (MOP)
 		ct.aoespam[115625]=true		-- Mortal Cleave (MOP)
 		ct.aoespam[105174]=true		-- Hand of Gul'Dan (MOP)
+		ct.aoespam[86040]=true		-- Hand of Gul'Dan (MOP)
+		ct.aoespam[47960]=true		-- Shadowflame (MOP)
+		ct.aoespam[129476]=true		-- Immolation Aura (MOP)
+		ct.aoespam[124915]=true		-- Chaos Wave (MOP)
+		ct.aoespam[103964]=true		-- Touch of Chaos (MOP)
+		ct.aoespam[103967]=true		-- Carrion Swarm (MOP)
 	end
 	if(ct.healing)then
 		ct.healfilter[28176] = true -- Fel Armor
@@ -156,6 +162,7 @@ elseif ct.myclass=="PRIEST"then
 		ct.aoespam[63544] = true -- Divine Touch
 		ct.aoespam[81751] = true -- Atonement (Non-crit)
 		ct.aoespam[94472] = true -- Atonement (Crit)
+		ct.aoespam[120692] = true -- Halo (Healing)
 		-- Damage spells
 		ct.aoespam[47666] = true -- Penance (Damage Effect)
 		ct.aoespam[15237] = true -- Holy Nova (Damage Effect)
@@ -167,6 +174,7 @@ elseif ct.myclass=="PRIEST"then
 		ct.aoespam[49821] = true -- Mind Seer
 		ct.aoespam[87532] = true -- Shadowy Apparition
 		ct.aoespam[14914] = true -- Holy Firen
+		ct.aoespam[120696] = true -- Halo
 	end
 	if(ct.healing)then
 		ct.healfilter[2944]=true 	-- Devouring Plague (Healing)
@@ -202,6 +210,7 @@ elseif ct.myclass=="MONK"then
 		ct.aoespam[124101] = true -- Zen Sphere: Detonate
 		ct.aoespam[130654] = true -- Chi Burst (Heal)
 		ct.aoespam[132463] = true -- Chi Wave (Heal)
+		ct.aoespam[116670] = true -- Uplift
 		-- Damage Spells
 		ct.aoespam[107270] = true -- Spinning Crane Kick
 		ct.aoespam[115181] = true -- Breath of Fire
@@ -266,8 +275,8 @@ elseif ct.myclass=="HUNTER"then
 		ct.aoespam[53301] = true -- Explosive Shot
 		ct.aoespam[118459] = true -- Beast Cleave
 		ct.aoespam[118455] = true -- Beast Cleave
-		ct.aoespam[120755] = true -- Glaive Toss
-		ct.aoespam[120756] = true -- Glaive Toss		
+		ct.aoespam[120761] = true -- Glaive Toss
+		ct.aoespam[121414] = true -- Glaive Toss		
 	end
 elseif ct.myclass=="DEATHKNIGHT"then
 	if(ct.mergeaoespam)then
@@ -334,6 +343,8 @@ if (ct.mergeaoespam) then
 	ct.aoespam[109856] = true -- Speaking of Rage (LFR)
 	ct.aoespam[107821] = true -- Speaking of Rage (Normal)
 	ct.aoespam[109859] = true -- Speaking of Rage (Heroic)
+	ct.aoespam[138374] = true -- Lightning Blast (Thunderhawk)
+	ct.aoespam[141004] = true -- Lightning Strike (Proc)
 end
 
 if (ct.moreauras) then
@@ -343,7 +354,7 @@ end
 ----------------------	
 --BEGIN CORE ADDON
 ----------------------
-local SQ, EQ = {}, {}
+local SQ, EQ, AQ = {}, {}, {}
 local reactiveSpell = {}
 
 local numf
@@ -1416,6 +1427,17 @@ if(ct.mergeaoespam or ct.eventspam) then
 						SQ[k]["count"]=0
 					end
 				end
+				--check the adaptive learning
+				for k,v in pairs(AQ) do
+					if not AQ[k]["locked"] and AQ[k]["utime"]+1<=utime then --set it to 1 second checks
+						--if we have at least a skill firing something 3 times within one second then it's safe to assume that it's spam
+						if AQ[k]["count"] >= 3 then
+							ct.aoespam[k] = true --add it to our spam aoe table temporarily until the user logs off
+							Debug(k)
+						end
+						AQ[k] = nil --remove from our observation table for another try
+					end
+				end
 			end
 			
 		end
@@ -1464,9 +1486,22 @@ if ct.auras or ct.damage or ct.healing then
 		local timestamp, eventType, hideCaster, sourceGUID, sourceName, sourceFlags, srcFlags2, destGUID, destName, destFlags, destFlags2 = select(1,...)
 		
 		if debugSwitch and debugSwitchEvent[eventType] ~= nil then
-			if (sourceGUID==ct.pguid) or (sourceFlags==gflags) then
+			if(sourceGUID==ct.pguid)or(sourceGUID==UnitGUID("pet"))or(sourceFlags==gflags)then
 				local spellId,spellName,spellSchool,amount=select(12,...)
-				Debug(eventType,'   ','|cFF99CC33SPELL_ID = '..tostring(spellId)..'|r','|cFFDF2B2B'..tostring(spellName)..'|r',select(12,...))
+				local isPet = '  '
+				local totalDmg = ''
+				if sourceGUID==UnitGUID("pet") then
+					isPet = '|cFFFFFF00PET_SKILL|r'
+				end
+				if eventType == "SWING_DAMAGE" then
+					totalDmg = spellId --amount gets stored as the first variable
+				else
+					totalDmg = amount
+				end
+				if eventType == "SWING_DAMAGE" or eventType == "RANGE_DAMAGE" then spellId = nil end
+				if eventType == "SWING_DAMAGE" then spellName = "SWING_DAMAGE" end
+				if eventType == "RANGE_DAMAGE" then spellName = "RANGE_DAMAGE" end
+				Debug(eventType,'   ','|cFF99CC33SPELL_ID = '..tostring(spellId)..'|r','|cFFDF2B2B'..tostring(spellName)..'|r', isPet, tostring(totalDmg))
 			end
 		end
 		
@@ -1629,13 +1664,28 @@ if ct.auras or ct.damage or ct.healing then
 						--if we have this spellname already stored use that spellid rather then the one passed
 						--we do this to condense all the spells with the same name but different spellid's, example Corruption
 						local spellTmp = spellId
-						if ct.spamName[spellName] then
-							spellTmp = ct.spamName[spellName]
+						if ct.spamName[tostring(spellName).."_DMG"] then --distinguish between damage and heal spam by using a suffix
+							spellTmp = ct.spamName[tostring(spellName).."_DMG"]
 						elseif ct.aoespam[spellId] then
-							if not ct.spamName[spellName] then ct.spamName[spellName]=spellId end
+							if not ct.spamName[tostring(spellName).."_DMG"] then ct.spamName[tostring(spellName).."_DMG"]=spellId end
+						else
+							--lets try adaptive learning, we will process this and if we detect it's a spammable skill, then lets add it temporarily to spamaoe table
+							if not AQ[spellTmp] then
+								AQ[spellTmp] = {}
+								AQ[spellTmp]["count"] = 0 
+							end
+							AQ[spellTmp]["locked"]=true
+							AQ[spellTmp]["count"]=AQ[spellTmp]["count"]+1
+							if AQ[spellTmp]["count"]==1 then
+								AQ[spellTmp]["utime"]=time()
+							end
+							AQ[spellTmp]["locked"]=false
 						end
 
 						if ct.mergeaoespam and ct.aoespam[spellTmp] then
+							if not SQ[spellTmp] then
+								SQ[spellTmp]={queue = 0, msg = "", color={}, count=0, utime=0, locked=false}
+							end
 							SQ[spellTmp]["locked"]=true
 							SQ[spellTmp]["queue"]=ct.SpamQueue(spellTmp, rawamount)
 							SQ[spellTmp]["msg"]=msg
@@ -1800,13 +1850,28 @@ if ct.auras or ct.damage or ct.healing then
 						end
 						
 						local spellTmp = spellId
-						if ct.spamName[spellName] then
-							spellTmp = ct.spamName[spellName]
+						if ct.spamName[tostring(spellName).."_HEAL"] then --distinguish between damage and heal spam by using a suffix
+							spellTmp = ct.spamName[tostring(spellName).."_HEAL"]
 						elseif ct.aoespam[spellId] then
-							if not ct.spamName[spellName] then ct.spamName[spellName]=spellId end
+							if not ct.spamName[tostring(spellName).."_HEAL"] then ct.spamName[tostring(spellName).."_HEAL"]=spellId end
+						else
+							--lets try adaptive learning, we will process this and if we detect it's a spammable skill, then lets add it temporarily to spamaoe table
+							if not AQ[spellTmp] then
+								AQ[spellTmp] = {}
+								AQ[spellTmp]["count"] = 0
+							end
+							AQ[spellTmp]["locked"]=true
+							AQ[spellTmp]["count"]=AQ[spellTmp]["count"]+1
+							if AQ[spellTmp]["count"]==1 then
+								AQ[spellTmp]["utime"]=time()
+							end
+							AQ[spellTmp]["locked"]=false
 						end
 						
 						if ct.mergeaoespam and ct.aoespam[spellTmp] then
+							if not SQ[spellTmp] then
+								SQ[spellTmp]={queue = 0, msg = "", color={}, count=0, utime=0, locked=false}
+							end						
 							SQ[spellTmp]["locked"]=true
 							SQ[spellTmp]["queue"]=ct.SpamQueue(spellTmp, rawamount)
 							SQ[spellTmp]["msg"]=msg
