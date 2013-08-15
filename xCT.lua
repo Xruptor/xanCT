@@ -1433,7 +1433,6 @@ if(ct.mergeaoespam or ct.eventspam) then
 						--if we have at least a skill firing something 3 times within one second then it's safe to assume that it's spam
 						if AQ[k]["count"] >= 3 then
 							ct.aoespam[k] = true --add it to our spam aoe table temporarily until the user logs off
-							Debug(k)
 						end
 						AQ[k] = nil --remove from our observation table for another try
 					end
