@@ -2,7 +2,7 @@
 ## Title: |cffFF0000x|rCT
 ## Notes: X Combat Text
 ## Author: Affli @ RU-Howling Fjord
-## Version: 2.1
+## Version: 2.5
 ## RequiredDeps: Blizzard_CombatText
 ## SavedVariables: xCT_DB
 
