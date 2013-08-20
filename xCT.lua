@@ -22,9 +22,8 @@ local function Debug(...)
 end
 
 local function Print(msg)
-{
-	DEFAULT_CHAT_FRAME:AddMessage("|cFF99CC33"..tostring(msg).."|r"
-}
+	DEFAULT_CHAT_FRAME:AddMessage("|cFF99CC33"..tostring(msg).."|r")
+end
 ---------------------------------------------------------------------------------
 -- outgoing healing filter, hide this spammy shit, plx
 if (ct.healing) then
@@ -824,6 +823,10 @@ elseif event == "PLAYER_ENTERING_WORLD" then
 elseif event == "PLAYER_LOGIN" then
 	if not xCT_DB then xCT_DB = {} end
 	
+	local ver = GetAddOnMetadata("xCT","Version") or 0
+	
+	DEFAULT_CHAT_FRAME:AddMessage("|cFF99CC33xCT|r [v|cFFDF2B2B"..ver.."|r]   /xct")
+	
 	for i = 1, numf do
 		RestoreLayout("xCT"..i, i)
 	end
@@ -1074,12 +1077,12 @@ local StartConfigmode = function()
 			f.d = f:CreateTexture("ARTWORK")
 			f.d:SetHeight(16)
 			f.d:SetWidth(16)
-			f.d:SetPoint("BOTTOMRIGHT", f , "BOTTOMRIGHT",-1,1)
+			f.d:SetPoint("BOTTOMRIGHT", f , "BOTTOMRIGHT",-1, 1)
 			f.d:SetTexture( .5, .5, .5)
 			f.d:SetAlpha(.3)
 
 			f:EnableMouse(true)
-			f:RegisterForDrag"(LeftButton")
+			f:RegisterForDrag("LeftButton")
 			f:SetScript("OnDragStart", function(self, button)
 				if self.isMoving then return end
 				self:StartSizing()
@@ -1489,7 +1492,7 @@ if ct.auras or ct.damage or ct.healing then
 						if not spellId then return end
 						local name, rank, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, shouldConsolidate = UnitAura("player", spellName)
 						--don't show auras with no durations
-						if name and duration and duration < = 0 then return end
+						if name and duration and duration <= 0 then return end
 						if ct.spellFilter[spellId] then return end
 						if reactiveSpell[spellName] then return end
 						lastAura = spellName
