@@ -69,13 +69,15 @@ if ct.myclass == "WARLOCK" then
 		ct.aoespam[30213] = true		-- Legion Strike (Felguard)
 		ct.aoespam[89753] = true		-- Felstorm (Felguard)
 		ct.aoespam[20153] = true		-- Immolation (Infrenal)
+		ct.aoespam[22703] = true		-- Infernal Awakening (Infernal)
+		ct.aoespam[755] = true			-- Health Funnel
 		--MOP
+		ct.aoespam[115422] = true		-- Void Ray (MOP)
 		ct.aoespam[103103] = true		-- Malefic Grasp (MOP)
 		ct.aoespam[131740] = true		-- Corruption (MOP)
 		ct.aoespam[131737] = true		-- Agony (MOP)
 		ct.aoespam[131736] = true		-- Unstable Affliction (MOP)
 		ct.aoespam[114790] = true		-- Seed of Corruption (MOP)
-		
 		ct.aoespam[112092] = true		-- Shadowbolt (MOP)
 		ct.aoespam[114328] = true		-- Shadowbolt (MOP)
 		ct.aoespam[114329] = true		-- Shadowbolt (MOP)
@@ -147,7 +149,8 @@ elseif ct.myclass == "PALADIN" then
 		ct.aoespam[101423] = true -- Seal of Righteousness
 		ct.aoespam[88263] = true -- Hammer of the Righteous
 		ct.aoespam[31935] = true -- Avenger's Shield
-		ct.aoespam[96172] = true -- Hand of Light (Mastery)		
+		ct.aoespam[96172] = true -- Hand of Light (Mastery)
+		ct.aoespam[86704] = true -- Ancient Fury
 	end
 elseif ct.myclass == "PRIEST" then
 	if (ct.mergeaoespam) then
@@ -191,6 +194,7 @@ elseif ct.myclass == "SHAMAN" then
 		ct.aoespam[1064] = true -- Chain Heal
 		ct.aoespam[51945] = true -- Earthliving
 		ct.aoespam[61295] = true -- Riptide (HoT and instant heal)
+		ct.aoespam[114911] = true -- Ancestral Guidance (heal)
 		-- Damage spells
 		ct.aoespam[421] = true -- Chain Lightning
 		ct.aoespam[45297] = true -- Chain Lightning (Mastery proc)
@@ -773,12 +777,6 @@ elseif event == "RUNE_POWER_UPDATE" then
 	local arg1, arg2 = ...
 	local start, duration, runeReady = GetRuneCooldown(arg1)
 	if (runeReady) then
-		localruneMapping = {
-			[1] = "BLOOD",
-			[2] = "UNHOLY",
-			[3] = "FROST",
-			[4] = "DEATH",
-		}
 		local rune = GetRuneType(arg1)
 		local msg = _G["COMBAT_TEXT_RUNE_"..RUNE_MAPPING[rune]]
 		if (rune == 1) then 
@@ -809,7 +807,6 @@ elseif event == "UNIT_ENTERED_VEHICLE"or event == "UNIT_EXITING_VEHICLE" then
 
 elseif event == "PLAYER_ENTERING_WORLD" then
 	SetUnit()
-	
 	if (ct.scrollable) then
 		SetScroll()
 	else
@@ -1410,6 +1407,12 @@ if (ct.mergeaoespam or ct.eventspam) then
 						--if we have at least a skill firing something 3 times within one second then it's safe to assume that it's spam
 						if AQ[k]["count"] >= 3 then
 							ct.aoespam[k] = true --add it to our spam aoe table temporarily until the user logs off
+							--if debugSwitch then
+								local playerClass = select(2,UnitClass"player")
+								if not xCT_DB["debug"] then xCT_DB["debug"] = {} end
+								if not xCT_DB["debug"][playerClass] then xCT_DB["debug"][playerClass] = {} end
+								xCT_DB["debug"][playerClass][k] = GetSpellInfo(k) or k
+							--end
 						end
 						AQ[k] = nil --remove from our observation table for another try
 					end
@@ -1711,10 +1714,11 @@ if ct.auras or ct.damage or ct.healing then
 						msg = ""
 					end
 					xCT3:AddMessage(ACTION_SPELL_INTERRUPT..": "..effect..msg, unpack(color))
-
+					return
 				elseif (eventType == "PARTY_KILL") and ct.killingblow and destIsPlayer then
 					local tname = select(9, ...)
 					pushEventFrame(xCT3, ACTION_PARTY_KILL..": "..tname, ACTION_PARTY_KILL, nil, nil, .2, 1, .2)
+					return
 				end
 			end
 		end
@@ -1764,7 +1768,8 @@ if ct.auras or ct.damage or ct.healing then
 						end
 						
 					end
-				
+					
+					return
 				end
 			end
 		end
@@ -1838,6 +1843,8 @@ if ct.auras or ct.damage or ct.healing then
 						if amount == nil or amount == "" then return end
 						xCT5:AddMessage(amount..""..msg, unpack(color))
 					end
+					
+					return
 				end
 			end
 		end
