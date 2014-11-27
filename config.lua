@@ -64,8 +64,9 @@ ns.config={
 	["stopvespam"] = true,		-- automaticly turns off healing spam for priests in shadowform. HIDE THOSE GREEN NUMBERS PLX!
 	["dkrunes"] = true,		-- show deatchknight rune recharge
 	["mergeaoespam"] = true,	-- merges multiple aoe spam into single message, can be useful for dots too.
-	["mergehealspam"] = true,	-- merges multiple incoming heal spam on the player to reduce the spam caused by periodic incoming heals.
+	["mergehealspam"] = true,	-- merges multiple incoming heal spam on the player to reduce the spam caused by periodic incoming heals for frame xCT2
 	["mergeaoespamtime"] = 4,	-- time in seconds aoe spell will be merged into single message. minimum is 1.
+	["mergeincominghealspamtime"] = 4,	-- time in seconds to merge incoming heal numbers this is xCT2 frame not the Event Frame xCT5
 	["mergeswingdamage"] = true, --merge swing (auto-attack or melee) damage using the spam assistance.  This is also called white damage.
 	["mergerangedamage"] = true, --merge range (auto-attack or bow) damage using the spam assistance.  This is also called white damage.
 	["killingblow"] = true,		-- tells you about your killingblows (works only with ["damage"] = true,)

@@ -102,7 +102,8 @@ if ct.myclass == "WARLOCK" then
 		ct.healfilter[79268] = true	-- Soul Harvest
 		ct.healfilter[30294] = true	-- Soul Leech
 		ct.healfilter[108366] = true	-- Soul Leech (MOP)
-		ct.healfilter[108503] = true	-- Grimoire of Sacrifice (MOP)		
+		ct.healfilter[108503] = true	-- Grimoire of Sacrifice (MOP)
+		ct.healfilter[108447] = true	-- Soul Leech (WOD)
 	end
 elseif ct.myclass == "DRUID" then
 	if (ct.mergeaoespam) then
@@ -361,7 +362,7 @@ end
 ----------------------	
 --BEGIN CORE ADDON
 ----------------------
-local SQ, EQ, AQ = {}, {}, {}
+local SQ, EQ, AQ, HQ = {}, {}, {}, {}
 local reactiveSpell = {}
 
 local numf
@@ -819,6 +820,41 @@ elseif event == "PLAYER_ENTERING_WORLD" then
 
 elseif event == "PLAYER_LOGIN" then
 	if not xCT_DB then xCT_DB = {} end
+	
+	if not xCT_DB["firsttime"] then
+		xCT_DB["firsttime"] = true
+	
+		--Floating Combat Text on Target
+		SetCVar("CombatDamage", 1) --damage
+		SetCVar("CombatLogPeriodicSpells", 1)
+		SetCVar("PetMeleeDamage", 1)
+		SetCVar("CombatHealing", 1)
+		SetCVar("CombatHealingAbsorbTarget", 1)
+		
+		--effects
+		SetCVar("fctSpellMechanics", 0)
+		SetCVar("fctSpellMechanicsOther", 0)
+		
+		--Floating Combat Text on Me
+		SetCVar("enableCombatText", 1)
+
+		SetCVar("fctDodgeParryMiss", 1)
+		SetCVar("fctDamageReduction", 1)
+		SetCVar("fctRepChanges", 0)
+		SetCVar("fctReactives", 1)
+		SetCVar("fctFriendlyHealers", 1)
+		SetCVar("fctCombatState", 0) --combat
+		SetCVar("CombatHealingAbsorbSelf", 1) --shields
+		
+		SetCVar("fctComboPoints", 0)
+		SetCVar("fctLowManaHealth", 1)
+		SetCVar("fctEnergyGains", 1)
+		SetCVar("fctPeriodicEnergyGains", 1)
+		SetCVar("fctHonorGains", 0)		
+		SetCVar("fctAuras", 1)
+		
+		SetCVar("enablePetBattleCombatText", 1) --Floating Combat Text for Pet Battles
+	end
 	
 	local ver = GetAddOnMetadata("xCT","Version") or 0
 	
@@ -1333,6 +1369,18 @@ if (ct.mergeaoespam or ct.eventspam) then
 			end
 			return amount
 		end
+		
+		ct.HealSpamQueue = function(sName, add)
+			local amount
+			local spam = HQ[sName]["queue"]
+			if (spam and type(spam == "number")) then
+				amount = spam + add
+			else
+				amount = add
+			end
+			return amount
+		end
+		
 	end
 
 	local tslu = 0
@@ -1415,6 +1463,21 @@ if (ct.mergeaoespam or ct.eventspam) then
 							--end
 						end
 						AQ[k] = nil --remove from our observation table for another try
+					end
+				end
+			end
+			
+			if ct.mergehealspam then
+				for k,v in pairs(HQ) do
+					if not HQ[k]["locked"] and HQ[k]["queue"] > 0 and (HQ[k]["utime"] + ct.mergeincominghealspamtime) <= utime then
+						if HQ[k]["count"] > 1 then
+							count = " |cffFFFFFF x "..HQ[k]["count"].."|r"
+						else
+							count = ""
+						end
+						xCT2:AddMessage(HQ[k]["msg"]..HQ[k]["queue"]..count, unpack(HQ[k]["color"]))
+						HQ[k]["queue"] = 0
+						HQ[k]["count"] = 0
 					end
 				end
 			end
@@ -1729,10 +1792,11 @@ if ct.auras or ct.damage or ct.healing then
 			--we don't want to see.  Sadly the default blizzard combat text doesn't give spellid
 			if (destGUID == ct.pguid) then
 				if (eventType == 'SPELL_HEAL' or eventType == 'SPELL_PERIODIC_HEAL') then
-					--ct.mergehealspam
+
 					local spellId, spellName, spellSchool, amount, overhealing, absorbed, critical = select(12, ...)
 					if not spellId then return end
 					
+					--ignore certain heals because we don't care and they repeat over and over indefinitely
 					if (ct.healfilter[spellId]) then
 						return
 					end
@@ -1753,18 +1817,39 @@ if ct.auras or ct.damage or ct.healing then
 							end
 						end
 					else
+					
 						if (amount >= ct.healtreshold) then
-							if (COMBAT_TEXT_SHOW_FRIENDLY_NAMES == "1") then
-								--we can only do spam checks when we have friendly names on, otherwise we have no means to compare ;)
-								--we only really want to do this with hots sooooo
-								if ct.mergeaoespam and eventType == 'SPELL_PERIODIC_HEAL' then
-									pushEventFrame(xCT2, "|cFF2AC85E"..sNameF.."|r  +"..amount, sNameF, amount, "|cFF2AC85E%1$s|r  +%2$s", .1, .75, .1)
-								else
-									xCT2:AddMessage("|cFF2AC85E"..sNameF.."|r  +"..amount, .1, .75, .1)
+						
+							if ct.mergehealspam and eventType == 'SPELL_PERIODIC_HEAL' then
+								local nameTmp = ct.myname
+								msg = "+"
+								if (COMBAT_TEXT_SHOW_FRIENDLY_NAMES == "1") then
+									nameTmp = sNameF
+									msg = "|cFF2AC85E"..sNameF.."|r  +"
 								end
+								
+								if not HQ[nameTmp] then
+									HQ[nameTmp] = {queue = 0, msg = "", color = {}, count = 0, utime = 0, locked = false}
+								end						
+								HQ[nameTmp]["locked"] = true
+								HQ[nameTmp]["queue"] = ct.HealSpamQueue(nameTmp, amount)
+								HQ[nameTmp]["msg"] = msg
+								HQ[nameTmp]["color"] = {.1, .75, .1}
+								HQ[nameTmp]["count"] = HQ[nameTmp]["count"] + 1
+								if HQ[nameTmp]["count"] == 1 then
+									HQ[nameTmp]["utime"] = time()
+								end
+								HQ[nameTmp]["locked"] = false
+								return
+							end
+
+							if (COMBAT_TEXT_SHOW_FRIENDLY_NAMES == "1") then
+								xCT2:AddMessage("|cFF2AC85E"..sNameF.."|r  +"..amount, .1, .75, .1)
 							else
 								xCT2:AddMessage("+"..amount, .1, .75, .1)
 							end
+							
+							
 						end
 						
 					end
