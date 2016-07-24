@@ -1,10 +1,9 @@
-## Interface: 60000
-## Title: |cffFF0000x|rCT
-## Notes: X Combat Text
-## Author: Affli @ RU-Howling Fjord
-## Version: 2.7
+## Interface: 70000
+## Title: |cffFF0000xan|rCT
+## Author: Xruptor
+## Version: 2.8
 ## RequiredDeps: Blizzard_CombatText
-## SavedVariables: xCT_DB
+## SavedVariables: xanCT_DB
 
 config.lua
-xCT.lua
+xanCT.lua

@@ -2,7 +2,7 @@
 Special thanks to:
 Mikord for MikScrollingBattleText and the amazing warning sound files it has (Which this addon utilizes)
 
-xCT by affli @ RU-Howling Fjord
+xanCT by affli @ RU-Howling Fjord
 All rights reserved.
 Thanks ALZA and Shestak for making this mod possible. Thanks Tukz for his wonderful style of coding. Thanks Rostok for some fixes and healing code.
 
@@ -16,7 +16,7 @@ ct.myclass = select(2, UnitClass("player"))
 
 local debugSwitch = false
 
-local debugf = tekDebug and tekDebug:GetFrame("xCT")
+local debugf = tekDebug and tekDebug:GetFrame("xanCT")
 local function Debug(...)
     if debugf then debugf:AddMessage(string.join(", ", tostringall(...))) end
 end
@@ -407,18 +407,18 @@ end
 local function SaveLayout(frame)
 	if type(frame) ~= "string" then return end
 	if not _G[frame] then return end
-	if not xCT_DB then xCT_DB = {} end
+	if not xanCT_DB then xanCT_DB = {} end
 	
-	local opt = xCT_DB[frame] or nil
+	local opt = xanCT_DB[frame] or nil
 
 	if not opt then
-		xCT_DB[frame] = {
+		xanCT_DB[frame] = {
 			["point"] = "CENTER",
 			["relativePoint"] = "CENTER",
 			["xOfs"] = 0,
 			["yOfs"] = 0,
 		}
-		opt = xCT_DB[frame]
+		opt = xanCT_DB[frame]
 		return
 	end
 	
@@ -435,18 +435,18 @@ end
 local function RestoreLayout(frame, index)
 	if type(frame) ~= "string" then return end
 	if not _G[frame] then return end
-	if not xCT_DB then xCT_DB = {} end
+	if not xanCT_DB then xanCT_DB = {} end
 
-	local opt = xCT_DB[frame] or nil
+	local opt = xanCT_DB[frame] or nil
 
 	if not opt then
-		xCT_DB[frame] = {
+		xanCT_DB[frame] = {
 			["point"] = "CENTER",
 			["relativePoint"] = "CENTER",
 			["xOfs"] = 0,
 			["yOfs"] = 0,
 		}
-		opt = xCT_DB[frame]
+		opt = xanCT_DB[frame]
 		
 		--defaults
 		if (index == 1) then
@@ -554,15 +554,15 @@ if (event == "COMBAT_TEXT_UPDATE") then
 		return
 	else
 	if subevent == "DAMAGE" then
-		xCT1:AddMessage("-"..arg2, .75, .1, .1)
+		xanCT1:AddMessage("-"..arg2, .75, .1, .1)
 	elseif subevent == "DAMAGE_CRIT" then
-		xCT1:AddMessage(ct.critprefix.."-"..arg2..ct.critpostfix, 1, .1, .1)
+		xanCT1:AddMessage(ct.critprefix.."-"..arg2..ct.critpostfix, 1, .1, .1)
 	elseif subevent == "SPELL_DAMAGE" then
-		xCT1:AddMessage("-"..arg2, .75, .3, .85)
+		xanCT1:AddMessage("-"..arg2, .75, .3, .85)
 	elseif subevent == "SPELL_DAMAGE_CRIT" then
-		xCT1:AddMessage(ct.critprefix.."-"..arg2..ct.critpostfix, 1, .3, .5)
+		xanCT1:AddMessage(ct.critprefix.."-"..arg2..ct.critpostfix, 1, .3, .5)
 	elseif subevent == "SPELL_CAST" then
-		xCT3:AddMessage(arg2, 1, .46, 0.10)
+		xanCT3:AddMessage(arg2, 1, .46, 0.10)
 		reactiveSpell[arg2] = true --prevent future parsing of this on the spam queue
 		--remove from event queue spam if it's in there
 		if EQ and EQ[arg2] and EQ[arg2]["count"] > 0 then
@@ -573,136 +573,136 @@ if (event == "COMBAT_TEXT_UPDATE") then
 		end
 		
 	elseif subevent == "MISS" and (COMBAT_TEXT_SHOW_DODGE_PARRY_MISS == "1") then
-		xCT1:AddMessage(MISS, .5, .5, .5)
+		xanCT1:AddMessage(MISS, .5, .5, .5)
 	elseif subevent == "DODGE" and (COMBAT_TEXT_SHOW_DODGE_PARRY_MISS == "1") then
-		xCT1:AddMessage(DODGE, .5, .5, .5)
+		xanCT1:AddMessage(DODGE, .5, .5, .5)
 	elseif subevent == "PARRY" and (COMBAT_TEXT_SHOW_DODGE_PARRY_MISS == "1") then
-		xCT1:AddMessage(PARRY, .5, .5, .5)
+		xanCT1:AddMessage(PARRY, .5, .5, .5)
 	elseif subevent == "EVADE" and (COMBAT_TEXT_SHOW_DODGE_PARRY_MISS == "1") then
-		xCT1:AddMessage(EVADE, .5, .5, .5)
+		xanCT1:AddMessage(EVADE, .5, .5, .5)
 	elseif subevent == "IMMUNE" and (COMBAT_TEXT_SHOW_DODGE_PARRY_MISS == "1") then
-		xCT1:AddMessage(IMMUNE, .5, .5, .5)
+		xanCT1:AddMessage(IMMUNE, .5, .5, .5)
 	elseif subevent == "DEFLECT" and (COMBAT_TEXT_SHOW_DODGE_PARRY_MISS == "1") then
-		xCT1:AddMessage(DEFLECT, .5, .5, .5)
+		xanCT1:AddMessage(DEFLECT, .5, .5, .5)
 	elseif subevent == "REFLECT" and (COMBAT_TEXT_SHOW_DODGE_PARRY_MISS == "1") then
-		xCT1:AddMessage(REFLECT, .5, .5, .5)
+		xanCT1:AddMessage(REFLECT, .5, .5, .5)
 	elseif subevent == "SPELL_MISS" and (COMBAT_TEXT_SHOW_DODGE_PARRY_MISS == "1") then
-		xCT1:AddMessage(MISS, .5, .5, .5)
+		xanCT1:AddMessage(MISS, .5, .5, .5)
 	elseif subevent == "SPELL_DODGE" and (COMBAT_TEXT_SHOW_DODGE_PARRY_MISS == "1") then
-		xCT1:AddMessage(DODGE, .5, .5, .5)
+		xanCT1:AddMessage(DODGE, .5, .5, .5)
 	elseif subevent == "SPELL_PARRY" and (COMBAT_TEXT_SHOW_DODGE_PARRY_MISS == "1") then
-		xCT1:AddMessage(PARRY, .5, .5, .5)
+		xanCT1:AddMessage(PARRY, .5, .5, .5)
 	elseif subevent == "SPELL_EVADE" and (COMBAT_TEXT_SHOW_DODGE_PARRY_MISS == "1") then
-		xCT1:AddMessage(EVADE, .5, .5, .5)
+		xanCT1:AddMessage(EVADE, .5, .5, .5)
 	elseif subevent == "SPELL_IMMUNE" and (COMBAT_TEXT_SHOW_DODGE_PARRY_MISS == "1") then
-		xCT1:AddMessage(IMMUNE, .5, .5, .5)
+		xanCT1:AddMessage(IMMUNE, .5, .5, .5)
 	elseif subevent == "SPELL_DEFLECT" and (COMBAT_TEXT_SHOW_DODGE_PARRY_MISS == "1") then
-		xCT1:AddMessage(DEFLECT, .5, .5, .5)
+		xanCT1:AddMessage(DEFLECT, .5, .5, .5)
 	elseif subevent == "SPELL_REFLECT" and (COMBAT_TEXT_SHOW_DODGE_PARRY_MISS == "1") then
-		xCT1:AddMessage(REFLECT, .5, .5, .5)
+		xanCT1:AddMessage(REFLECT, .5, .5, .5)
 
 	elseif subevent == "RESIST" then
 		if (arg3) then
 			if (COMBAT_TEXT_SHOW_RESISTANCES == "1") then
-				xCT1:AddMessage(part:format(arg2, RESIST, arg3), .75, .5, .5)
+				xanCT1:AddMessage(part:format(arg2, RESIST, arg3), .75, .5, .5)
 			else
-				xCT1:AddMessage(arg2, .75, .1, .1)
+				xanCT1:AddMessage(arg2, .75, .1, .1)
 			end
 		elseif (COMBAT_TEXT_SHOW_RESISTANCES == "1") then
-			xCT1:AddMessage(RESIST, .5, .5, .5)
+			xanCT1:AddMessage(RESIST, .5, .5, .5)
 		end
 	elseif subevent == "BLOCK" then
 		if (arg3) then
 			if (COMBAT_TEXT_SHOW_RESISTANCES == "1") then
-				xCT1:AddMessage(part:format(arg2, BLOCK, arg3), .75, .5, .5)
+				xanCT1:AddMessage(part:format(arg2, BLOCK, arg3), .75, .5, .5)
 			else
-				xCT1:AddMessage(arg2, .75, .1, .1)
+				xanCT1:AddMessage(arg2, .75, .1, .1)
 			end
 		elseif (COMBAT_TEXT_SHOW_RESISTANCES == "1") then
-			xCT1:AddMessage(BLOCK, .5, .5, .5)
+			xanCT1:AddMessage(BLOCK, .5, .5, .5)
 		end
 	elseif subevent == "ABSORB" then
 		if (arg3) then
 			if (COMBAT_TEXT_SHOW_RESISTANCES == "1") then
-				xCT1:AddMessage(part:format(arg2, ABSORB, arg3), .75, .5, .5)
+				xanCT1:AddMessage(part:format(arg2, ABSORB, arg3), .75, .5, .5)
 			else
-				xCT1:AddMessage(arg2, .75, .1, .1)
+				xanCT1:AddMessage(arg2, .75, .1, .1)
 			end
 		elseif (COMBAT_TEXT_SHOW_RESISTANCES == "1") then
-			xCT1:AddMessage(ABSORB, .5, .5, .5)
+			xanCT1:AddMessage(ABSORB, .5, .5, .5)
 		end
 	elseif subevent == "SPELL_RESIST" then
 		if (arg3) then
 			if (COMBAT_TEXT_SHOW_RESISTANCES == "1") then
-				xCT1:AddMessage(part2:format(arg2, RESIST, arg3), .5, .3, .5)
+				xanCT1:AddMessage(part2:format(arg2, RESIST, arg3), .5, .3, .5)
 			else
-				xCT1:AddMessage(arg2, .75, .3, .85)
+				xanCT1:AddMessage(arg2, .75, .3, .85)
 			end
 		elseif (COMBAT_TEXT_SHOW_RESISTANCES == "1") then
-			xCT1:AddMessage(RESIST, .5, .5, .5)
+			xanCT1:AddMessage(RESIST, .5, .5, .5)
 		end
 	elseif subevent == "SPELL_BLOCK" then
 		if (arg3) then
 			if (COMBAT_TEXT_SHOW_RESISTANCES == "1") then
-				xCT1:AddMessage(part2:format(arg2, BLOCK, arg3), .5, .3, .5)
+				xanCT1:AddMessage(part2:format(arg2, BLOCK, arg3), .5, .3, .5)
 			else
-				xCT1:AddMessage("-"..arg2, .75, .3, .85)
+				xanCT1:AddMessage("-"..arg2, .75, .3, .85)
 			end
 		elseif (COMBAT_TEXT_SHOW_RESISTANCES == "1") then
-			xCT1:AddMessage(BLOCK, .5, .5, .5)
+			xanCT1:AddMessage(BLOCK, .5, .5, .5)
 		end
 	elseif subevent == "SPELL_ABSORB" then
 		if (arg3) then
 			if (COMBAT_TEXT_SHOW_RESISTANCES == "1") then
-				xCT1:AddMessage(part2:format(arg2, ABSORB, arg3), .5, .3, .5)
+				xanCT1:AddMessage(part2:format(arg2, ABSORB, arg3), .5, .3, .5)
 			else
-				xCT1:AddMessage(arg2, .75, .3, .85)
+				xanCT1:AddMessage(arg2, .75, .3, .85)
 			end
 		elseif (COMBAT_TEXT_SHOW_RESISTANCES == "1") then
-			xCT1:AddMessage(ABSORB, .5, .5, .5)
+			xanCT1:AddMessage(ABSORB, .5, .5, .5)
 		end
 
 	elseif subevent == "ENERGIZE" and (COMBAT_TEXT_SHOW_ENERGIZE == "1") then
 		if  tonumber(arg2) > 0 then
 			if (arg3 and arg3 == "MANA" or arg3 == "RAGE" or arg3 == "FOCUS" or arg3 == "ENERGY" or arg3 == "RUNIC_POWER" or arg3 == "SOUL_SHARDS" or arg3 == "HOLY_POWER" or arg3 == "LIGHT_FORCE") then
-				pushEventFrame(xCT3, "+"..arg2.."  ".._G[arg3], _G[arg3], arg2, "+%2$s  %1$s", PowerBarColor[arg3].r, PowerBarColor[arg3].g, PowerBarColor[arg3].b)
+				pushEventFrame(xanCT3, "+"..arg2.."  ".._G[arg3], _G[arg3], arg2, "+%2$s  %1$s", PowerBarColor[arg3].r, PowerBarColor[arg3].g, PowerBarColor[arg3].b)
 			end
 		end
 		if ( arg3 == "ECLIPSE" ) then
 			if ( tonumber(arg2) < 0 ) then
-				pushEventFrame(xCT3, "+"..abs(tonumber(arg2)).."  "..BALANCE_NEGATIVE_ENERGY, BALANCE_NEGATIVE_ENERGY, abs(tonumber(arg2)), "+%2$s  %1$s", PowerBarColor[arg3].negative.r, PowerBarColor[arg3].negative.g, PowerBarColor[arg3].negative.b)
+				pushEventFrame(xanCT3, "+"..abs(tonumber(arg2)).."  "..BALANCE_NEGATIVE_ENERGY, BALANCE_NEGATIVE_ENERGY, abs(tonumber(arg2)), "+%2$s  %1$s", PowerBarColor[arg3].negative.r, PowerBarColor[arg3].negative.g, PowerBarColor[arg3].negative.b)
 			else
-				pushEventFrame(xCT3, arg2.."  "..BALANCE_POSITIVE_ENERGY, BALANCE_POSITIVE_ENERGY, arg2, "+%2$s  %1$s", PowerBarColor[arg3].positive.r, PowerBarColor[arg3].positive.g, PowerBarColor[arg3].positive.b)
+				pushEventFrame(xanCT3, arg2.."  "..BALANCE_POSITIVE_ENERGY, BALANCE_POSITIVE_ENERGY, arg2, "+%2$s  %1$s", PowerBarColor[arg3].positive.r, PowerBarColor[arg3].positive.g, PowerBarColor[arg3].positive.b)
 			end
 		end
 
 	elseif subevent == "PERIODIC_ENERGIZE" and (COMBAT_TEXT_SHOW_PERIODIC_ENERGIZE == "1") then
 		if  tonumber(arg2) > 0 then
 			if (arg3 and arg3 == "MANA" or arg3 == "RAGE" or arg3 == "FOCUS" or arg3 == "ENERGY" or arg3 == "RUNIC_POWER" or arg3 == "SOUL_SHARDS" or arg3 == "HOLY_POWER" or arg3 == "LIGHT_FORCE") then
-				pushEventFrame(xCT3, "+"..arg2.." ".._G[arg3], _G[arg3], arg2, "+%2$s  %1$s", PowerBarColor[arg3].r, PowerBarColor[arg3].g, PowerBarColor[arg3].b)
+				pushEventFrame(xanCT3, "+"..arg2.." ".._G[arg3], _G[arg3], arg2, "+%2$s  %1$s", PowerBarColor[arg3].r, PowerBarColor[arg3].g, PowerBarColor[arg3].b)
 			end
 		end
 		if ( arg3 == "ECLIPSE" ) then
 			if ( tonumber(arg2) < 0 ) then
-				pushEventFrame(xCT3, "+"..abs(tonumber(arg2)).."  "..BALANCE_NEGATIVE_ENERGY, BALANCE_NEGATIVE_ENERGY, abs(tonumber(arg2)), "+%2$s  %1$s", PowerBarColor[arg3].negative.r, PowerBarColor[arg3].negative.g, PowerBarColor[arg3].negative.b)
+				pushEventFrame(xanCT3, "+"..abs(tonumber(arg2)).."  "..BALANCE_NEGATIVE_ENERGY, BALANCE_NEGATIVE_ENERGY, abs(tonumber(arg2)), "+%2$s  %1$s", PowerBarColor[arg3].negative.r, PowerBarColor[arg3].negative.g, PowerBarColor[arg3].negative.b)
 			else
-				pushEventFrame(xCT3, arg2.."  "..BALANCE_POSITIVE_ENERGY, BALANCE_POSITIVE_ENERGY, arg2, "+%2$s  %1$s", PowerBarColor[arg3].positive.r, PowerBarColor[arg3].positive.g, PowerBarColor[arg3].positive.b)
+				pushEventFrame(xanCT3, arg2.."  "..BALANCE_POSITIVE_ENERGY, BALANCE_POSITIVE_ENERGY, arg2, "+%2$s  %1$s", PowerBarColor[arg3].positive.r, PowerBarColor[arg3].positive.g, PowerBarColor[arg3].positive.b)
 			end
 		end
 		
 	elseif subevent == "SPELL_AURA_START_HARMFUL" and (COMBAT_TEXT_SHOW_AURAS == "1") and (ct.auras) then
 		if arg2 == lastAura then return end
-		xCT3:AddMessage("+"..arg2, 1, .1, .1)
+		xanCT3:AddMessage("+"..arg2, 1, .1, .1)
 
 	elseif subevent == "SPELL_AURA_END_HARMFUL" and (COMBAT_TEXT_SHOW_AURAS == "1") and (ct.auras) then
-		xCT3:AddMessage("-"..arg2, .1, 1, .1)
+		xanCT3:AddMessage("-"..arg2, .1, 1, .1)
 
 	elseif subevent == "HONOR_GAINED" and (COMBAT_TEXT_SHOW_HONOR_GAINED == "1") then
 		arg2 = tonumber(arg2)
 		if (arg2 and abs(arg2) > 1) then
 			arg2 = floor(arg2)
 			if (arg2 > 0) then
-				pushEventFrame(xCT3, HONOR.."  +"..arg2, HONOR, arg2, "%1$s  +%2$s", .1, .1, 1)
+				pushEventFrame(xanCT3, HONOR.."  +"..arg2, HONOR, arg2, "%1$s  +%2$s", .1, .1, 1)
 			end
 		end
 
@@ -710,15 +710,15 @@ if (event == "COMBAT_TEXT_UPDATE") then
 		--only show guild rep if user has turned it on
 		if strlower(arg2) == strlower(GUILD) then
 			if ct.showguildrep then
-				pushEventFrame(xCT3, arg2.."  +"..arg3, arg2, arg3, "%1$s  +%2$s", .1, .1, 1)
+				pushEventFrame(xanCT3, arg2.."  +"..arg3, arg2, arg3, "%1$s  +%2$s", .1, .1, 1)
 			end
 			return
 		end
 		
-		pushEventFrame(xCT3, arg2.."  +"..arg3, arg2, arg3, "%1$s  +%2$s", .1, .1, 1)
+		pushEventFrame(xanCT3, arg2.."  +"..arg3, arg2, arg3, "%1$s  +%2$s", .1, .1, 1)
 
 	elseif subevent == "SPELL_ACTIVE" and (COMBAT_TEXT_SHOW_REACTIVES == "1") then
-		xCT3:AddMessage(arg2, 1, .82, 0)
+		xanCT3:AddMessage(arg2, 1, .82, 0)
 		reactiveSpell[arg2] = true --prevent future parsing of this on the spam queue
 		--remove from event queue spam if it's in there
 		if EQ and EQ[arg2] and EQ[arg2]["count"] > 0 then
@@ -734,8 +734,8 @@ elseif event == "UNIT_HEALTH" and (COMBAT_TEXT_SHOW_LOW_HEALTH_MANA == "1") then
 	if subevent == ct.unit then
 		if (UnitHealth(ct.unit) / UnitHealthMax(ct.unit) <= COMBAT_TEXT_LOW_HEALTH_THRESHOLD) then
 			if (not lowHealth) then
-				xCT3:AddMessage(HEALTH_LOW, 1, .1, .1)
-				PlaySoundFile("Interface\\AddOns\\xCT\\sounds\\LowHealth.ogg", "Master")
+				xanCT3:AddMessage(HEALTH_LOW, 1, .1, .1)
+				PlaySoundFile("Interface\\AddOns\\xanCT\\sounds\\LowHealth.ogg", "Master")
 				lowHealth = true
 			end
 		else
@@ -748,8 +748,8 @@ elseif event == "UNIT_MANA" and (COMBAT_TEXT_SHOW_LOW_HEALTH_MANA == "1") then
 		local _, powerToken = UnitPowerType(ct.unit)
 		if (powerToken == "MANA" and (UnitPower(ct.unit) / UnitPowerMax(ct.unit)) <= COMBAT_TEXT_LOW_MANA_THRESHOLD) then
 			if (not lowMana) then
-				xCT3:AddMessage(MANA_LOW, 1, .1, .1)
-				PlaySoundFile("Interface\\AddOns\\xCT\\sounds\\LowMana.ogg", "Master")
+				xanCT3:AddMessage(MANA_LOW, 1, .1, .1)
+				PlaySoundFile("Interface\\AddOns\\xanCT\\sounds\\LowMana.ogg", "Master")
 				lowMana = true
 			end
 		else
@@ -758,10 +758,10 @@ elseif event == "UNIT_MANA" and (COMBAT_TEXT_SHOW_LOW_HEALTH_MANA == "1") then
 	end
 
 elseif event == "PLAYER_REGEN_ENABLED" and (COMBAT_TEXT_SHOW_COMBAT_STATE == "1") then
-		xCT3:AddMessage("-"..LEAVING_COMBAT, .1, 1, .1)
+		xanCT3:AddMessage("-"..LEAVING_COMBAT, .1, 1, .1)
 
 elseif event == "PLAYER_REGEN_DISABLED" and (COMBAT_TEXT_SHOW_COMBAT_STATE == "1") then
-		xCT3:AddMessage("+"..ENTERING_COMBAT, 1, .1, .1)
+		xanCT3:AddMessage("+"..ENTERING_COMBAT, 1, .1, .1)
 
 elseif event == "UNIT_COMBO_POINTS" and (COMBAT_TEXT_SHOW_COMBO_POINTS == "1") then
 	if (subevent == ct.unit) then
@@ -771,7 +771,7 @@ elseif event == "UNIT_COMBO_POINTS" and (COMBAT_TEXT_SHOW_COMBO_POINTS == "1") t
 				if (cp == MAX_COMBO_POINTS) then
 					r, g, b = 0, .82, 1
 				end
-				xCT3:AddMessage(format(COMBAT_TEXT_COMBO_POINTS, cp), r, g, b)
+				xanCT3:AddMessage(format(COMBAT_TEXT_COMBO_POINTS, cp), r, g, b)
 			end
 	end
 
@@ -798,7 +798,7 @@ elseif event == "RUNE_POWER_UPDATE" then
 			g = 0.13
 			b = 0.98
 		end
-		xCT3:AddMessage("+"..msg, r, g, b)
+		xanCT3:AddMessage("+"..msg, r, g, b)
 	end
 
 elseif event == "UNIT_ENTERED_VEHICLE"or event == "UNIT_EXITING_VEHICLE" then
@@ -820,10 +820,10 @@ elseif event == "PLAYER_ENTERING_WORLD" then
 	end
 
 elseif event == "PLAYER_LOGIN" then
-	if not xCT_DB then xCT_DB = {} end
+	if not xanCT_DB then xanCT_DB = {} end
 	
-	if not xCT_DB["firsttime"] then
-		xCT_DB["firsttime"] = true
+	if not xanCT_DB["firsttime"] then
+		xanCT_DB["firsttime"] = true
 	
 		--Floating Combat Text on Target
 		SetCVar("CombatDamage", 1) --damage
@@ -857,12 +857,12 @@ elseif event == "PLAYER_LOGIN" then
 		SetCVar("enablePetBattleCombatText", 1) --Floating Combat Text for Pet Battles
 	end
 	
-	local ver = GetAddOnMetadata("xCT","Version") or 0
+	local ver = GetAddOnMetadata("xanCT","Version") or 0
 	
-	DEFAULT_CHAT_FRAME:AddMessage("|cFF99CC33xCT|r [v|cFFDF2B2B"..ver.."|r]   /xct")
+	DEFAULT_CHAT_FRAME:AddMessage("|cFF99CC33xanCT|r [v|cFFDF2B2B"..ver.."|r]   /xanct")
 	
 	for i = 1, numf do
-		RestoreLayout("xCT"..i, i)
+		RestoreLayout("xanCT"..i, i)
 	end
 
 	--set the thresholds
@@ -892,7 +892,7 @@ end
 ct.locked = true
 ct.frames = {}
 for i = 1, numf do
-	local f = CreateFrame("ScrollingMessageFrame", "xCT"..i, UIParent)
+	local f = CreateFrame("ScrollingMessageFrame", "xanCT"..i, UIParent)
 	f.xfont = ct["font_"..i]
 	f.xfontsize = ct["fontsize_"..i]
 	f.xfontstyle = ct["fontstyle_"..i]
@@ -941,7 +941,7 @@ for i = 1, numf do
 			
 	end
 	--create anchor
-	f.anchor = CreateFrame("Frame", "xCT"..i.."anchor", f)
+	f.anchor = CreateFrame("Frame", "xanCT"..i.."anchor", f)
 	
 	f.anchor:SetWidth(25)
 	f.anchor:SetHeight(25)
@@ -950,7 +950,7 @@ for i = 1, numf do
 	f.anchor:EnableMouse(true)
 
 	f.anchor:ClearAllPoints()
-	f.anchor:SetPoint("TOPLEFT", "xCT"..i, "TOPLEFT", -25, 0)
+	f.anchor:SetPoint("TOPLEFT", "xanCT"..i, "TOPLEFT", -25, 0)
 	f.anchor:SetFrameStrata("DIALOG")
 	
 	f.anchor:SetBackdrop({
@@ -1009,37 +1009,37 @@ local function customRaidNotice_AddMessage(self, ...)
 	--ignore self that's the frame to send the messages too
 	--print(self:GetName() or 'nil'
 	local msg, color, arg3, arg4 = ...
-	xCT4:AddMessage(msg, color.r, color.g, color.b)
+	xanCT4:AddMessage(msg, color.r, color.g, color.b)
 end
 RaidNotice_AddMessage = customRaidNotice_AddMessage
 
 
 -- register events
-local xCT=CreateFrame("Frame")
-xCT:RegisterEvent("COMBAT_TEXT_UPDATE")
-xCT:RegisterEvent("UNIT_HEALTH")
-xCT:RegisterEvent("UNIT_MANA")
-xCT:RegisterEvent("PLAYER_REGEN_DISABLED")
-xCT:RegisterEvent("PLAYER_REGEN_ENABLED")
-xCT:RegisterEvent("UNIT_COMBO_POINTS")
+local xanCT=CreateFrame("Frame")
+xanCT:RegisterEvent("COMBAT_TEXT_UPDATE")
+xanCT:RegisterEvent("UNIT_HEALTH")
+xanCT:RegisterEvent("UNIT_MANA")
+xanCT:RegisterEvent("PLAYER_REGEN_DISABLED")
+xanCT:RegisterEvent("PLAYER_REGEN_ENABLED")
+xanCT:RegisterEvent("UNIT_COMBO_POINTS")
 if (ct.dkrunes and select(2,UnitClass"player") == "DEATHKNIGHT") then
-	xCT:RegisterEvent("RUNE_POWER_UPDATE")
+	xanCT:RegisterEvent("RUNE_POWER_UPDATE")
 end
-xCT:RegisterEvent("UNIT_ENTERED_VEHICLE")
-xCT:RegisterEvent("UNIT_EXITING_VEHICLE")
-xCT:RegisterEvent("PLAYER_ENTERING_WORLD")
-xCT:RegisterEvent("PLAYER_LOGIN")
+xanCT:RegisterEvent("UNIT_ENTERED_VEHICLE")
+xanCT:RegisterEvent("UNIT_EXITING_VEHICLE")
+xanCT:RegisterEvent("PLAYER_ENTERING_WORLD")
+xanCT:RegisterEvent("PLAYER_LOGIN")
 
-xCT:RegisterEvent("RAID_BOSS_EMOTE")
-xCT:RegisterEvent("RAID_BOSS_WHISPER")
-xCT:RegisterEvent("CHAT_MSG_RAID_WARNING")
+xanCT:RegisterEvent("RAID_BOSS_EMOTE")
+xanCT:RegisterEvent("RAID_BOSS_WHISPER")
+xanCT:RegisterEvent("CHAT_MSG_RAID_WARNING")
 
-xCT:SetScript("OnEvent",OnEvent)
+xanCT:SetScript("OnEvent",OnEvent)
 
 -- steal external messages sent by other addons using CombatText_AddMessage
 Blizzard_CombatText_AddMessage = CombatText_AddMessage
 function CombatText_AddMessage(message, scrollFunction, r, g, b, displayType, isStaggered)
-	pushEventFrame(xCT3, message, message, nil, nil, r, g, b)
+	pushEventFrame(xanCT3, message, message, nil, nil, r, g, b)
 end
 
 -- force hide blizz damage/healing, if desired
@@ -1259,8 +1259,8 @@ local function EndTestMode()
 	ct.testmode = false
 	end
 
--- /xct lock popup dialog
-StaticPopupDialogs["XCT_LOCK"] = {
+-- /xanCT lock popup dialog
+StaticPopupDialogs["XANCT_LOCK"] = {
 	text = "To save |cffFF0000x|rCT window positions you need to reload your UI.\n Click "..ACCEPT.." to reload UI.\nClick "..CANCEL.." to do it later.",
 	button1 = ACCEPT,
 	button2 = CANCEL,
@@ -1273,8 +1273,8 @@ StaticPopupDialogs["XCT_LOCK"] = {
 }
 
 -- slash commands
-SLASH_XCT1="/xct"
-SlashCmdList["XCT"] = function(input)
+SLASH_XANCT1="/xanct"
+SlashCmdList["XANCT"] = function(input)
 	input = string.lower(input)
 	if (input == "unlock") then
 		if (ct.locked) then
@@ -1286,7 +1286,7 @@ SlashCmdList["XCT"] = function(input)
 		if (ct.locked) then
 			Print("already locked.")
 		else
-			StaticPopup_Show("XCT_LOCK")
+			StaticPopup_Show("XANCT_LOCK")
 		end
 	elseif (input == "test") then
 		if (ct.testmode) then
@@ -1298,27 +1298,27 @@ SlashCmdList["XCT"] = function(input)
 		end
 	elseif (input == "reset") then
 		for i = 1, numf do
-			if _G["xCT"..i] then
-				_G["xCT"..i]:ClearAllPoints()
-				_G["xCT"..i]:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
-				_G["xCT"..i]:SetHeight(128)
-				_G["xCT"..i]:SetWidth(128)
+			if _G["xanCT"..i] then
+				_G["xanCT"..i]:ClearAllPoints()
+				_G["xanCT"..i]:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
+				_G["xanCT"..i]:SetHeight(128)
+				_G["xanCT"..i]:SetWidth(128)
 			end
 		end
 	elseif (input == "debug") then
 		if debugSwitch then
 			debugSwitch = false
-			Print("xCT: Debugging is now [|cFF99CC33OFF|r]")
+			Print("xanCT: Debugging is now [|cFF99CC33OFF|r]")
 		else
 			debugSwitch = true
-			Print("xCT: Debugging is now [|cFF99CC33ON|r] (Requires Addon tekDebug, type /tekdebug)")
+			Print("xanCT: Debugging is now [|cFF99CC33ON|r] (Requires Addon tekDebug, type /tekdebug)")
 		end	
 	else
-		Print("/xct unlock|r to move and resize frames.")
-		Print("/xct lock|r to lock frames.")
-		Print("/xct test|r to toggle testmode (sample xCT output).")
-		Print("/xct reset|r to reset frame positions.")
-		Print("/xct debug|r to toggle debugging mode.  Note: requires tekDebug addon!")
+		Print("/xanct unlock|r to move and resize frames.")
+		Print("/xanct lock|r to lock frames.")
+		Print("/xanct test|r to toggle testmode (sample xanCT output).")
+		Print("/xanct reset|r to reset frame positions.")
+		Print("/xanct debug|r to toggle debugging mode.  Note: requires tekDebug addon!")
 	end
 end
 
@@ -1385,9 +1385,9 @@ if (ct.mergeaoespam or ct.eventspam) then
 	end
 
 	local tslu = 0
-	local xCTspam = CreateFrame("Frame")
+	local xanCTspam = CreateFrame("Frame")
 	
-	xCTspam:SetScript("OnUpdate", function(self, elapsed)
+	xanCTspam:SetScript("OnUpdate", function(self, elapsed)
 		local count, queue
 
 		local utime = time()
@@ -1445,7 +1445,7 @@ if (ct.mergeaoespam or ct.eventspam) then
 						else
 							count = ""
 						end
-						xCT5:AddMessage(SQ[k]["queue"]..SQ[k]["msg"]..count, unpack(SQ[k]["color"]))
+						xanCT5:AddMessage(SQ[k]["queue"]..SQ[k]["msg"]..count, unpack(SQ[k]["color"]))
 						SQ[k]["queue"] = 0
 						SQ[k]["count"] = 0
 					end
@@ -1458,9 +1458,9 @@ if (ct.mergeaoespam or ct.eventspam) then
 							ct.aoespam[k] = true --add it to our spam aoe table temporarily until the user logs off
 							--if debugSwitch then
 								local playerClass = select(2,UnitClass"player")
-								if not xCT_DB["debug"] then xCT_DB["debug"] = {} end
-								if not xCT_DB["debug"][playerClass] then xCT_DB["debug"][playerClass] = {} end
-								xCT_DB["debug"][playerClass][k] = GetSpellInfo(k) or k
+								if not xanCT_DB["debug"] then xanCT_DB["debug"] = {} end
+								if not xanCT_DB["debug"][playerClass] then xanCT_DB["debug"][playerClass] = {} end
+								xanCT_DB["debug"][playerClass][k] = GetSpellInfo(k) or k
 							--end
 						end
 						AQ[k] = nil --remove from our observation table for another try
@@ -1476,7 +1476,7 @@ if (ct.mergeaoespam or ct.eventspam) then
 						else
 							count = ""
 						end
-						xCT2:AddMessage(HQ[k]["msg"]..HQ[k]["queue"]..count, unpack(HQ[k]["color"]))
+						xanCT2:AddMessage(HQ[k]["msg"]..HQ[k]["queue"]..count, unpack(HQ[k]["color"]))
 						HQ[k]["queue"] = 0
 						HQ[k]["count"] = 0
 					end
@@ -1507,7 +1507,7 @@ local gflags = bit.bor(COMBATLOG_OBJECT_AFFILIATION_MINE,
 	)
 			
 if ct.auras or ct.damage or ct.healing then
-	local xCTe = CreateFrame("Frame")
+	local xanCTevent = CreateFrame("Frame")
 	if (ct.damage and ct.damagecolor) then
 		ct.dmgcolor = {}
 		ct.dmgcolor[1] = {1, 1, 0} -- physical
@@ -1565,15 +1565,15 @@ if ct.auras or ct.damage or ct.healing then
 						lastAura = spellName
 						--depending on the return amount can be auraType
 						if amount == "DEBUFF" then
-							pushEventFrame(xCT3, "+"..spellName, spellName, nil, nil, 1, .1, .1, 0)
+							pushEventFrame(xanCT3, "+"..spellName, spellName, nil, nil, 1, .1, .1, 0)
 						else
-							pushEventFrame(xCT3, "+"..spellName, spellName, nil, nil, 0.39, 0.50, 0.98, 0)
+							pushEventFrame(xanCT3, "+"..spellName, spellName, nil, nil, 0.39, 0.50, 0.98, 0)
 						end
 						return
 					elseif (eventType == "ENCHANT_APPLIED") then
 						local spellName = select(12, ...)
 						if reactiveSpell[spellName] then return end
-						pushEventFrame(xCT3, "+"..spellName, spellName, nil, nil, 0.39, 0.50, 0.98, 0)
+						pushEventFrame(xanCT3, "+"..spellName, spellName, nil, nil, 0.39, 0.50, 0.98, 0)
 						return
 					end
 				end
@@ -1614,7 +1614,7 @@ if ct.auras or ct.damage or ct.healing then
 							return
 						end
 						msg = msg..queueMsg
-						xCT5:AddMessage(msg)
+						xanCT5:AddMessage(msg)
 					end
 					return
 				elseif (eventType == "RANGE_DAMAGE") then
@@ -1644,7 +1644,7 @@ if ct.auras or ct.damage or ct.healing then
 							return
 						end
 						msg = msg..queueMsg						
-						xCT5:AddMessage(msg)
+						xanCT5:AddMessage(msg)
 					end
 					return
 				elseif (eventType == "SPELL_DAMAGE") or (eventType == "SPELL_PERIODIC_DAMAGE" and ct.dotdamage) then
@@ -1716,7 +1716,7 @@ if ct.auras or ct.damage or ct.healing then
 							SQ[spellTmp]["locked"] = false
 							return
 						end
-						xCT5:AddMessage(amount..""..msg, unpack(color))
+						xanCT5:AddMessage(amount..""..msg, unpack(color))
 					end
 					return
 				elseif (eventType == "SWING_MISSED") then
@@ -1731,7 +1731,7 @@ if ct.auras or ct.damage or ct.healing then
 						missType = missType.." \124T"..icon..":"..ct.iconsize..":"..ct.iconsize..":0:0:64:64:5:59:5:59\124t"
 					end
 		
-					xCT5:AddMessage(missType)
+					xanCT5:AddMessage(missType)
 					return
 				elseif (eventType == "SPELL_MISSED") or (eventType == "RANGE_MISSED") then
 					local spellId, _, _, missType, _ = select(12, ...)
@@ -1740,7 +1740,7 @@ if ct.auras or ct.damage or ct.healing then
 						icon = GetSpellTexture(spellId)
 						missType = missType.." \124T"..icon..":"..ct.iconsize..":"..ct.iconsize..":0:0:64:64:5:59:5:59\124t"
 					end 
-					xCT5:AddMessage(missType)
+					xanCT5:AddMessage(missType)
 					return
 				elseif (eventType == "SPELL_DISPEL") and ct.dispel then
 					local target, _,  _, id, effect, _, etype = select(12, ...)
@@ -1761,7 +1761,7 @@ if ct.auras or ct.damage or ct.healing then
 					else
 						color = {1, 0, .5}
 					end
-					xCT3:AddMessage(ACTION_SPELL_DISPEL..": "..effect..msg, unpack(color))
+					xanCT3:AddMessage(ACTION_SPELL_DISPEL..": "..effect..msg, unpack(color))
 					return
 				elseif (eventType == "SPELL_INTERRUPT") and ct.interrupt then
 					local target, _,  _, id, effect = select(12, ...)
@@ -1777,11 +1777,11 @@ if ct.auras or ct.damage or ct.healing then
 					else
 						msg = ""
 					end
-					xCT3:AddMessage(ACTION_SPELL_INTERRUPT..": "..effect..msg, unpack(color))
+					xanCT3:AddMessage(ACTION_SPELL_INTERRUPT..": "..effect..msg, unpack(color))
 					return
 				elseif (eventType == "PARTY_KILL") and ct.killingblow and destIsPlayer then
 					local tname = select(9, ...)
-					pushEventFrame(xCT3, ACTION_PARTY_KILL..": "..tname, ACTION_PARTY_KILL, nil, nil, .2, 1, .2)
+					pushEventFrame(xanCT3, ACTION_PARTY_KILL..": "..tname, ACTION_PARTY_KILL, nil, nil, .2, 1, .2)
 					return
 				end
 			end
@@ -1789,7 +1789,7 @@ if ct.auras or ct.damage or ct.healing then
 		
 		--HEALING
 		if ct.healingincoming then
-			--do incoming healing for the xCT2 frame (only do the player.. who cares about the pet, we have to do it this way in order to filter out certain heals
+			--do incoming healing for the xanCT2 frame (only do the player.. who cares about the pet, we have to do it this way in order to filter out certain heals
 			--we don't want to see.  Sadly the default blizzard combat text doesn't give spellid
 			if (destGUID == ct.pguid) then
 				if (eventType == 'SPELL_HEAL' or eventType == 'SPELL_PERIODIC_HEAL') then
@@ -1812,9 +1812,9 @@ if ct.auras or ct.damage or ct.healing then
 					if (critical) then
 						if (amount >= ct.healtreshold) then
 							if (COMBAT_TEXT_SHOW_FRIENDLY_NAMES == "1") then
-								xCT2:AddMessage("|cFF2AC85E"..sNameF.."|r  +"..amount, .1, 1, .1)
+								xanCT2:AddMessage("|cFF2AC85E"..sNameF.."|r  +"..amount, .1, 1, .1)
 							else
-								xCT2:AddMessage("+"..amount, .1, 1, .1)
+								xanCT2:AddMessage("+"..amount, .1, 1, .1)
 							end
 						end
 					else
@@ -1845,9 +1845,9 @@ if ct.auras or ct.damage or ct.healing then
 							end
 
 							if (COMBAT_TEXT_SHOW_FRIENDLY_NAMES == "1") then
-								xCT2:AddMessage("|cFF2AC85E"..sNameF.."|r  +"..amount, .1, .75, .1)
+								xanCT2:AddMessage("|cFF2AC85E"..sNameF.."|r  +"..amount, .1, .75, .1)
 							else
-								xCT2:AddMessage("+"..amount, .1, .75, .1)
+								xanCT2:AddMessage("+"..amount, .1, .75, .1)
 							end
 							
 							
@@ -1861,7 +1861,7 @@ if ct.auras or ct.damage or ct.healing then
 		end
 		
 		if ct.healing then
-			--both incoming and outgoing heals to the external icon frame xCT5
+			--both incoming and outgoing heals to the external icon frame xanCT5
 			if (sourceGUID == ct.pguid) or (sourceFlags == gflags) then
 				if (eventType == 'SPELL_HEAL') or (eventType == 'SPELL_PERIODIC_HEAL'and ct.showhots) then
 				
@@ -1927,7 +1927,7 @@ if ct.auras or ct.damage or ct.healing then
 							return
 						end
 						if amount == nil or amount == "" then return end
-						xCT5:AddMessage(amount..""..msg, unpack(color))
+						xanCT5:AddMessage(amount..""..msg, unpack(color))
 					end
 					
 					return
@@ -1937,6 +1937,6 @@ if ct.auras or ct.damage or ct.healing then
 	
 	end
 	
-	xCTe:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-	xCTe:SetScript("OnEvent", eventF)
+	xanCTevent:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+	xanCTevent:SetScript("OnEvent", eventF)
 end
