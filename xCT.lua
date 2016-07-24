@@ -104,6 +104,7 @@ if ct.myclass == "WARLOCK" then
 		ct.healfilter[108366] = true	-- Soul Leech (MOP)
 		ct.healfilter[108503] = true	-- Grimoire of Sacrifice (MOP)
 		ct.healfilter[108447] = true	-- Soul Leech (WOD)
+		ct.healfilter[143924] = true	-- Leech part of Soul Link Trait
 	end
 elseif ct.myclass == "DRUID" then
 	if (ct.mergeaoespam) then
