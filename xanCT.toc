@@ -3,6 +3,7 @@
 ## Author: Xruptor
 ## Version: 2.8
 ## RequiredDeps: Blizzard_CombatText
+## OptionalDeps: tekDebug
 ## SavedVariables: xanCT_DB
 
 config.lua
