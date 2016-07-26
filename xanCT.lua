@@ -2,7 +2,7 @@
 Special thanks to:
 Mikord for MikScrollingBattleText and the amazing warning sound files it has (Which this addon utilizes)
 
-xanCT by affli @ RU-Howling Fjord
+xCT by affli @ RU-Howling Fjord
 All rights reserved.
 Thanks ALZA and Shestak for making this mod possible. Thanks Tukz for his wonderful style of coding. Thanks Rostok for some fixes and healing code.
 
@@ -779,26 +779,8 @@ elseif event == "RUNE_POWER_UPDATE" then
 	local arg1, arg2 = ...
 	local start, duration, runeReady = GetRuneCooldown(arg1)
 	if (runeReady) then
-		local rune = GetRuneType(arg1)
-		local msg = _G["COMBAT_TEXT_RUNE_"..RUNE_MAPPING[rune]]
-		if (rune == 1) then 
-			r = .75
-			g = 0
-			b = 0
-		elseif (rune == 2) then
-			r = .75
-			g = 1
-			b = 0
-		elseif (rune == 3) then
-			r = 0
-			g = 1
-			b = 1
-		elseif (rune == 4) then
-			r = 0.96
-			g = 0.13
-			b = 0.98
-		end
-		xanCT3:AddMessage("+"..msg, r, g, b)
+		--to stop rune spam, used to be nice when it was different runes.  now they are all the same
+		pushEventFrame(xanCT3, "+Rune", "Rune", nil, nil, r, g, b, 0)
 	end
 
 elseif event == "UNIT_ENTERED_VEHICLE"or event == "UNIT_EXITING_VEHICLE" then
@@ -1323,23 +1305,23 @@ SlashCmdList["XANCT"] = function(input)
 end
 
 -- awesome shadow priest helper
-if (ct.stopvespam and ct.myclass == "PRIEST") then
-	local sp = CreateFrame("Frame")
-	sp:SetScript("OnEvent", function(...)
-		if (GetShapeshiftForm() == 1) then
-			if (ct.blizzheadnumbers) then
-				SetCVar('CombatHealing', 0)
-			end
-		else
-			if (ct.blizzheadnumbers) then
-				SetCVar('CombatHealing', 1)
-			end
-		end
-	end)
-	sp:RegisterEvent("PLAYER_ENTERING_WORLD")	
-	sp:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
-	sp:RegisterEvent("UPDATE_SHAPESHIFT_FORMS")
-end
+-- if (ct.stopvespam and ct.myclass == "PRIEST") then
+	-- local sp = CreateFrame("Frame")
+	-- sp:SetScript("OnEvent", function(...)
+		-- if (GetShapeshiftForm() == 1) then
+			-- if (ct.blizzheadnumbers) then
+				-- SetCVar('CombatHealing', 0)
+			-- end
+		-- else
+			-- if (ct.blizzheadnumbers) then
+				-- SetCVar('CombatHealing', 1)
+			-- end
+		-- end
+	-- end)
+	-- sp:RegisterEvent("PLAYER_ENTERING_WORLD")	
+	-- sp:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
+	-- sp:RegisterEvent("UPDATE_SHAPESHIFT_FORMS")
+-- end
 
 -- spam merger (event and aoe)
 if (ct.mergeaoespam or ct.eventspam) then
